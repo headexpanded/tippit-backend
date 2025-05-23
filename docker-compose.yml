@@ -2,23 +2,30 @@ services:
   app:
     build:
       context: ./
-      dockerfile: app.dockerfile
-    working_dir: /var/www
+      dockerfile: docker/app/app.dockerfile
     volumes:
-      - ./:/var/www
+      - type: bind
+        source: ./
+        target: /var/www
     depends_on:
       database:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - app-network
   web:
     build:
       context: ./
-      dockerfile: web.dockerfile
+      dockerfile: docker/web/web.dockerfile
     working_dir: /var/www
     volumes:
-      - ./:/var/www
+      - type: bind
+        source: ./
+        target: /var/www
     ports:
-      - 80:80
+      - "80:80"
+    networks:
+      - app-network
   database:
     image: mysql:latest
     volumes:
@@ -29,7 +36,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
     ports:
-      - 3306:3306
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -37,6 +44,8 @@ services:
       retries: 5
       start_period: 10s
     restart: unless-stopped
+    networks:
+      - app-network
   mailhog:
     image: mailhog/mailhog:latest
     logging:
@@ -44,6 +53,8 @@ services:
     ports:
       - 1025:1025
       - 8025:8025
+    networks:
+      - app-network
   pma:
     image: phpmyadmin:5.2.1
     environment:
@@ -56,6 +67,10 @@ services:
       database:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - app-network
 networks:
+  app-network:
+    driver: bridge
 volumes:
   dbdata:
