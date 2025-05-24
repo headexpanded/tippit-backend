@@ -72,6 +72,8 @@ services:
       - app-network
   pma:
     image: phpmyadmin:5.2.1
+    ports:
+      - "8088:80"
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=${DB_HOST}
