@@ -12,7 +12,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - app-network
+      - default
   web:
     build:
       context: ./
@@ -26,21 +26,7 @@ services:
     ports:
       - "8080:80"
     networks:
-      - app-network
-#  tippit-frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile: Dockerfile
-#    ports:
-#      - "5173:5173" # Vite dev server
-#    volumes:
-#      - ./frontend:/app
-#    working_dir: /app
-#    command: ["pnpm", "dev", "--host"]
-#    networks:
-#      - app-network
-#    depends_on:
-#      - app
+      - default
   database:
     image: mysql:latest
     volumes:
@@ -60,7 +46,7 @@ services:
       start_period: 10s
     restart: unless-stopped
     networks:
-      - app-network
+      - default
   mailhog:
     image: mailhog/mailhog:latest
     logging:
@@ -69,7 +55,7 @@ services:
       - 1025:1025
       - 8025:8025
     networks:
-      - app-network
+      - default
   pma:
     image: phpmyadmin:5.2.1
     ports:
@@ -85,9 +71,10 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - app-network
+      - default
 networks:
-  app-network:
-    driver: bridge
+  default:
+    external: true
+    name: tippit-network
 volumes:
   dbdata:
