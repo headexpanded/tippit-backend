@@ -25,3 +25,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('statistics/season/{season}', [StatisticsController::class, 'getSeasonStatistics']);
     Route::get('statistics/accuracy', [StatisticsController::class, 'getPredictionAccuracy']);
 });
+
+// OAuth Routes
+Route::get('auth/google', [AuthController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
+// OTP Routes
+Route::post('auth/otp/send', [AuthController::class, 'sendOtp']);
+Route::post('auth/otp/verify', [AuthController::class, 'verifyOtp']);
+
+// Passkey Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('auth/passkey/options', [AuthController::class, 'getPasskeyOptions']);
+    Route::post('auth/passkey/register', [AuthController::class, 'registerPasskey']);
+});
+
+Route::get('auth/passkey/authenticate/options', [AuthController::class, 'getPasskeyAuthenticationOptions']);
+Route::post('auth/passkey/authenticate', [AuthController::class, 'authenticateWithPasskey']);

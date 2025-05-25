@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\OneTimePasswords\HasOneTimePasswords;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasOneTimePasswords;
 
     /**
      * The attributes that are mass assignable.
@@ -25,6 +26,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
+        'passkey_credentials',
         'email_reminders_enabled',
         'last_login_at',
         'is_admin',
@@ -38,6 +41,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'passkey_credentials',
     ];
 
     /**
@@ -53,6 +57,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'email_reminders_enabled' => 'boolean',
             'is_admin' => 'boolean',
+            'passkey_credentials' => 'array',
         ];
     }
 
