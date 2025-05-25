@@ -11,15 +11,15 @@ check-network:
 	fi
 
 up: check-network
-	@echo "Starting containers..."
+	@echo "Starting backend containers..."
 	docker compose up -d --build
 
 down:
-	@echo "Stopping containers..."
+	@echo "Stopping backend containers..."
 	docker compose down
 
 restart: down up
-	@echo "Containers restarted."
+	@echo "Backend containers restarted."
 
 logs:
 	@echo "Displaying logs..."
