@@ -4,22 +4,25 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Services\GameService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class GameController extends Controller
 {
+    protected GameService $gameService;
+
+    public function __construct(GameService $gameService)
+    {
+        $this->gameService = $gameService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
     {
-        $games = Game::with(['homeTeam', 'awayTeam'])
-            ->orderBy('match_date')
-            ->orderBy('match_time')
-            ->get();
-
+        $games = $this->gameService->getUpcomingGames();
         return response()->json($games);
     }
 
@@ -28,21 +31,16 @@ class GameController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'home_team_id' => 'required|exists:teams,id',
-            'away_team_id' => 'required|exists:teams,id|different:home_team_id',
+            'away_team_id' => 'required|exists:teams,id',
             'match_date' => 'required|date',
             'match_time' => 'required',
             'season' => 'required|string',
             'lockout_time' => 'required|date',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $game = Game::create($request->all());
-
+        $game = $this->gameService->createGame($validated);
         return response()->json($game, 201);
     }
 
@@ -51,8 +49,7 @@ class GameController extends Controller
      */
     public function show(Game $game): JsonResponse
     {
-        $game->load(['homeTeam', 'awayTeam', 'predictions']);
-        return response()->json($game);
+        return response()->json($game->load(['homeTeam', 'awayTeam']));
     }
 
     /**
@@ -60,24 +57,16 @@ class GameController extends Controller
      */
     public function update(Request $request, Game $game): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'home_team_id' => 'exists:teams,id',
-            'away_team_id' => 'exists:teams,id|different:home_team_id',
+            'away_team_id' => 'exists:teams,id',
             'match_date' => 'date',
             'match_time' => 'string',
             'season' => 'string',
-            'home_score' => 'nullable|integer|min:0',
-            'away_score' => 'nullable|integer|min:0',
-            'status' => 'in:scheduled,in_progress,completed,cancelled',
             'lockout_time' => 'date',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $game->update($request->all());
-
+        $game = $this->gameService->updateGame($game, $validated);
         return response()->json($game);
     }
 
@@ -92,44 +81,23 @@ class GameController extends Controller
 
     public function updateScore(Request $request, Game $game): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'home_score' => 'required|integer|min:0',
             'away_score' => 'required|integer|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $game->update([
-            'home_score' => $request->home_score,
-            'away_score' => $request->away_score,
-            'status' => 'completed'
-        ]);
+        $game = $this->gameService->updateScore(
+            $game,
+            $validated['home_score'],
+            $validated['away_score']
+        );
 
         return response()->json($game);
     }
 
-    public function getUpcomingGames(): JsonResponse
+    public function completed(): JsonResponse
     {
-        $games = Game::with(['homeTeam', 'awayTeam'])
-            ->where('status', 'scheduled')
-            ->where('match_date', '>=', now()->toDateString())
-            ->orderBy('match_date')
-            ->orderBy('match_time')
-            ->get();
-
-        return response()->json($games);
-    }
-
-    public function getCompletedGames(): JsonResponse
-    {
-        $games = Game::with(['homeTeam', 'awayTeam'])
-            ->where('status', 'completed')
-            ->orderBy('match_date', 'desc')
-            ->orderBy('match_time', 'desc')
-            ->get();
-
+        $games = $this->gameService->getCompletedGames();
         return response()->json($games);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MiniLeague;
 use App\Models\User;
+use App\Services\MiniLeagueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,17 +13,19 @@ use Illuminate\Support\Facades\Validator;
 
 class MiniLeagueController extends Controller
 {
+    protected MiniLeagueService $miniLeagueService;
+
+    public function __construct(MiniLeagueService $miniLeagueService)
+    {
+        $this->miniLeagueService = $miniLeagueService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
     {
-        $miniLeagues = MiniLeague::with(['creator', 'users'])
-            ->whereHas('users', function ($query) {
-                $query->where('users.id', Auth::id());
-            })
-            ->get();
-
+        $miniLeagues = $this->miniLeagueService->getUserMiniLeagues(auth()->user());
         return response()->json($miniLeagues);
     }
 
@@ -31,25 +34,17 @@ class MiniLeagueController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            $miniLeague = $this->miniLeagueService->createMiniLeague(auth()->user(), $validated);
+            return response()->json($miniLeague, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        $miniLeague = MiniLeague::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'created_by' => Auth::id(),
-        ]);
-
-        // Add creator as first member
-        $miniLeague->users()->attach(Auth::id(), ['joined_at' => now()]);
-
-        return response()->json($miniLeague, 201);
     }
 
     /**
@@ -74,17 +69,17 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'name' => 'string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            $miniLeague = $this->miniLeagueService->updateMiniLeague($miniLeague, $validated);
+            return response()->json($miniLeague);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        $miniLeague->update($request->all());
-        return response()->json($miniLeague);
     }
 
     /**
@@ -96,8 +91,12 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $miniLeague->delete();
-        return response()->json(null, 204);
+        try {
+            $this->miniLeagueService->deleteMiniLeague($miniLeague);
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
     }
 
     public function addMember(Request $request, MiniLeague $miniLeague): JsonResponse
@@ -106,27 +105,17 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            $user = User::findOrFail($validated['user_id']);
+            $this->miniLeagueService->addMember($miniLeague, $user);
+            return response()->json(['message' => 'Member added successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        // Check if league is full
-        if ($miniLeague->users()->count() >= 10) {
-            return response()->json(['error' => 'Mini league is full'], 422);
-        }
-
-        // Check if user is already a member
-        if ($miniLeague->users()->where('users.id', $request->user_id)->exists()) {
-            return response()->json(['error' => 'User is already a member'], 422);
-        }
-
-        $miniLeague->users()->attach($request->user_id, ['joined_at' => now()]);
-
-        return response()->json(['message' => 'Member added successfully']);
     }
 
     public function removeMember(Request $request, MiniLeague $miniLeague): JsonResponse
@@ -135,22 +124,17 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            $user = User::findOrFail($validated['user_id']);
+            $this->miniLeagueService->removeMember($miniLeague, $user);
+            return response()->json(['message' => 'Member removed successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-        // Cannot remove the creator
-        if ($request->user_id === $miniLeague->created_by) {
-            return response()->json(['error' => 'Cannot remove the league creator'], 422);
-        }
-
-        $miniLeague->users()->detach($request->user_id);
-
-        return response()->json(['message' => 'Member removed successfully']);
     }
 
     public function leave(MiniLeague $miniLeague): JsonResponse
@@ -160,9 +144,12 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'League creator cannot leave. Transfer ownership or delete the league.'], 422);
         }
 
-        $miniLeague->users()->detach(Auth::id());
-
-        return response()->json(['message' => 'Left mini league successfully']);
+        try {
+            $this->miniLeagueService->leaveMiniLeague($miniLeague, auth()->user());
+            return response()->json(['message' => 'Left mini league successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
     }
 
     public function getRankings(MiniLeague $miniLeague): JsonResponse
@@ -171,19 +158,7 @@ class MiniLeagueController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $rankings = $miniLeague->users()
-            ->with('statistics')
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'user' => $user,
-                    'points' => $user->statistics->total_points,
-                    'rank' => $user->statistics->current_rank,
-                ];
-            })
-            ->sortByDesc('points')
-            ->values();
-
+        $rankings = $this->miniLeagueService->getRankings($miniLeague);
         return response()->json($rankings);
     }
 }
