@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\Game\GameCreated;
+use App\Events\Game\GameScoreUpdated;
 use App\Models\Game;
 use App\Models\Prediction;
 use App\Models\User;
@@ -17,7 +19,9 @@ class GameService extends BaseService
 
     public function createGame(array $data): Game
     {
-        return $this->model->create($data);
+        $game = $this->model->create($data);
+        event(new GameCreated($game));
+        return $game;
     }
 
     public function updateGame(Game $game, array $data): Game
@@ -28,6 +32,9 @@ class GameService extends BaseService
 
     public function updateScore(Game $game, int $homeScore, int $awayScore): Game
     {
+        $oldHomeScore = $game->home_score;
+        $oldAwayScore = $game->away_score;
+
         $game->update([
             'home_score' => $homeScore,
             'away_score' => $awayScore,
@@ -36,6 +43,9 @@ class GameService extends BaseService
 
         // Update predictions and user statistics
         $this->processPredictions($game);
+
+        // Dispatch score update event
+        event(new GameScoreUpdated($game, $oldHomeScore, $oldAwayScore));
 
         return $game;
     }

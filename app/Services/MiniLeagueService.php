@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\MiniLeague\MemberJoined;
+use App\Events\MiniLeague\MiniLeagueCreated;
 use App\Models\MiniLeague;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -23,6 +25,8 @@ class MiniLeagueService extends BaseService
 
         // Add creator as first member
         $miniLeague->users()->attach($creator->id, ['joined_at' => now()]);
+
+        event(new MiniLeagueCreated($miniLeague));
 
         return $miniLeague;
     }
@@ -72,6 +76,8 @@ class MiniLeagueService extends BaseService
         }
 
         $miniLeague->users()->attach($user->id, ['joined_at' => now()]);
+
+        event(new MemberJoined($miniLeague, $user));
     }
 
     public function removeMember(MiniLeague $miniLeague, User $user): void
