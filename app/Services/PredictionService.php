@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\Prediction\PredictionCreated;
+use App\Events\Prediction\PredictionUpdated;
 use App\Models\Game;
 use App\Models\Prediction;
 use App\Models\User;
@@ -29,12 +31,16 @@ class PredictionService extends BaseService
             throw new \Exception('Prediction already exists for this game.');
         }
 
-        return $this->model->create([
+        $prediction = $this->model->create([
             'user_id' => $user->id,
             'game_id' => $game->id,
             'predicted_home_score' => $data['predicted_home_score'],
             'predicted_away_score' => $data['predicted_away_score'],
         ]);
+
+        event(new PredictionCreated($prediction));
+
+        return $prediction;
     }
 
     public function updatePrediction(Prediction $prediction, array $data): Prediction
@@ -46,10 +52,17 @@ class PredictionService extends BaseService
             throw new \Exception('Game is locked. Cannot update prediction.');
         }
 
+        $oldValues = [
+            'predicted_home_score' => $prediction->predicted_home_score,
+            'predicted_away_score' => $prediction->predicted_away_score,
+        ];
+
         $prediction->update([
             'predicted_home_score' => $data['predicted_home_score'],
             'predicted_away_score' => $data['predicted_away_score'],
         ]);
+
+        event(new PredictionUpdated($prediction, $oldValues));
 
         return $prediction;
     }
