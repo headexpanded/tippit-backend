@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -24,12 +32,7 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
+        $user = $this->userService->createUser($request->all());
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -121,5 +124,93 @@ class UserController extends Controller
             ->get();
 
         return response()->json($miniLeagues);
+    }
+
+    public function index(): JsonResponse
+    {
+        $users = $this->userService->getActiveUsers();
+        return response()->json($users);
+    }
+
+    public function show(User $user): JsonResponse
+    {
+        $user = $this->userService->getUserWithRelations($user);
+        return response()->json($user);
+    }
+
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'string|max:255',
+            'email' => 'string|email|max:255|unique:users,email,' . $user->id,
+            'username' => 'string|max:255|unique:users,username,' . $user->id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        $user = $this->userService->updateUser($user, $validated);
+        return response()->json($user);
+    }
+
+    public function destroy(User $user): JsonResponse
+    {
+        $this->userService->deleteUser($user);
+        return response()->json(null, 204);
+    }
+
+    public function updatePreferences(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'preferences' => 'required|array',
+        ]);
+
+        $user = $this->userService->updateUserPreferences(auth()->user(), $validated['preferences']);
+        return response()->json($user);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'query' => 'required|string|min:2',
+        ]);
+
+        $users = $this->userService->searchUsers($validated['query']);
+        return response()->json($users);
+    }
+
+    public function getTopUsers(): JsonResponse
+    {
+        $users = $this->userService->getTopUsers();
+        return response()->json($users);
+    }
+
+    public function sendPasswordResetLink(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = $this->userService->sendPasswordResetLink($validated['email']);
+        return response()->json(['message' => 'Password reset link sent']);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+            'token' => 'required|string',
+        ]);
+
+        $success = $this->userService->resetPassword(
+            $validated['email'],
+            $validated['password'],
+            $validated['token']
+        );
+
+        if ($success) {
+            return response()->json(['message' => 'Password reset successfully']);
+        }
+
+        return response()->json(['message' => 'Unable to reset password'], 400);
     }
 }
