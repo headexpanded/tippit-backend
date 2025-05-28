@@ -11,6 +11,11 @@ class NotifyGameCreated implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * @param  GameCreated  $event
+     *
+     * @return void
+     */
     public function handle(GameCreated $event): void
     {
         // Notify all users about the new game

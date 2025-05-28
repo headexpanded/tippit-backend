@@ -13,11 +13,17 @@ class Team extends Model
         'logo_url',
     ];
 
+    /**
+     * @return HasMany
+     */
     public function homeGames(): HasMany
     {
         return $this->hasMany(Game::class, 'home_team_id');
     }
 
+    /**
+     * @return HasMany
+     */
     public function awayGames(): HasMany
     {
         return $this->hasMany(Game::class, 'away_team_id');

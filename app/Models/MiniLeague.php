@@ -16,11 +16,17 @@ class MiniLeague extends Model
         'created_by',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
@@ -28,11 +34,17 @@ class MiniLeague extends Model
             ->withPivot('joined_at');
     }
 
+    /**
+     * @return HasMany
+     */
     public function messages(): HasMany
     {
         return $this->hasMany(MiniLeagueMessage::class);
     }
 
+    /**
+     * @return HasOne
+     */
     public function ranking(): HasOne
     {
         return $this->hasOne(LeagueRanking::class);

@@ -21,11 +21,17 @@ class Prediction extends Model
         'points_awarded' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);

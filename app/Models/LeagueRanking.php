@@ -20,6 +20,9 @@ class LeagueRanking extends Model
         'member_count' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function miniLeague(): BelongsTo
     {
         return $this->belongsTo(MiniLeague::class);

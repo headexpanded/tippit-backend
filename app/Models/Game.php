@@ -28,16 +28,25 @@ class Game extends Model
         'away_score' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function homeTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'home_team_id');
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function awayTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'away_team_id');
     }
 
+    /**
+     * @return HasMany
+     */
     public function predictions(): HasMany
     {
         return $this->hasMany(Prediction::class);

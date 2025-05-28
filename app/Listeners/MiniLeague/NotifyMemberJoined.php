@@ -11,6 +11,11 @@ class NotifyMemberJoined implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * @param  MemberJoined  $event
+     *
+     * @return void
+     */
     public function handle(MemberJoined $event): void
     {
         $miniLeague = $event->miniLeague;

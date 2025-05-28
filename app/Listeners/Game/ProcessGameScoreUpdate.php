@@ -11,6 +11,11 @@ class ProcessGameScoreUpdate implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    /**
+     * @param  GameScoreUpdated  $event
+     *
+     * @return void
+     */
     public function handle(GameScoreUpdated $event): void
     {
         $game = $event->game;
@@ -27,7 +32,7 @@ class ProcessGameScoreUpdate implements ShouldQueue
                 $event->oldAwayScore
             ));
 
-            // Update mini league rankings if user is in any mini leagues
+            // Update mini league rankings if the user is in any mini leagues
             $miniLeagues = $user->miniLeagues;
             foreach ($miniLeagues as $miniLeague) {
                 event(new \App\Events\MiniLeague\RankingsUpdated($miniLeague));

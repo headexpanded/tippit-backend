@@ -26,6 +26,9 @@ class UserStatistics extends Model
         'best_rank' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
