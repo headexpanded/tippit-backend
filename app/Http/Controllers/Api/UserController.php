@@ -83,8 +83,11 @@ class UserController extends Controller
      */
     public function logout(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
-        $user->tokens()->delete();
+        if ($user instanceof User) {
+            $user->tokens()->delete();
+        }
         return response()->json(['message' => 'Logged out successfully']);
     }
 
@@ -93,9 +96,13 @@ class UserController extends Controller
      */
     public function profile(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
-        $user->load(['statistics', 'predictions', 'miniLeagues']);
-        return response()->json($user);
+        if ($user instanceof User) {
+            $user->load(['statistics', 'predictions', 'miniLeagues']);
+            return response()->json($user);
+        }
+        return response()->json(['error' => 'User not found'], 404);
     }
 
     /**
@@ -105,7 +112,11 @@ class UserController extends Controller
      */
     public function updateProfile(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
@@ -118,16 +129,21 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Verify the current password if changing password
-        if ($request->has('new_password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
+        $data = $request->all();
+        if (isset($data['new_password'])) {
+            if (!Hash::check($data['current_password'], $user->password)) {
                 return response()->json(['error' => 'Current password is incorrect'], 422);
             }
-            $user->password = Hash::make($request->new_password);
+            $user->password = Hash::make($data['new_password']);
         }
 
-        $user->name = $request->name ?? $user->name;
-        $user->email = $request->email ?? $user->email;
+        if (isset($data['name'])) {
+            $user->name = $data['name'];
+        }
+        if (isset($data['email'])) {
+            $user->email = $data['email'];
+        }
+
         $user->save();
 
         return response()->json($user);
@@ -138,7 +154,12 @@ class UserController extends Controller
      */
     public function getPredictions(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
         $predictions = $user->predictions()
             ->with(['game.homeTeam', 'game.awayTeam'])
             ->orderBy('created_at', 'desc')
@@ -152,7 +173,12 @@ class UserController extends Controller
      */
     public function getMiniLeagues(): JsonResponse
     {
+        /** @var User $user */
         $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
         $miniLeagues = $user->miniLeagues()
             ->with(['creator', 'users'])
             ->get();
@@ -221,7 +247,13 @@ class UserController extends Controller
             'preferences' => 'required|array',
         ]);
 
-        $user = $this->userService->updateUserPreferences(Auth::user(), $validated['preferences']);
+        /** @var User $user */
+        $user = Auth::user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $user = $this->userService->updateUserPreferences($user, $validated['preferences']);
         return response()->json($user);
     }
 

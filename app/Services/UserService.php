@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Password;
 class UserService extends BaseService
 {
     /**
-     * @param  Model  $model
+     * @param  User  $model
      */
     public function __construct(User $model)
     {

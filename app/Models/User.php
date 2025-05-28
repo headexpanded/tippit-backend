@@ -14,6 +14,7 @@ use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\OneTimePasswords\HasOneTimePasswords;
 use Illuminate\Database\Eloquent\Builder;
+use Laravel\Sanctum\NewAccessToken;
 
 class User extends Authenticatable
 {
@@ -123,16 +124,41 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
+    /**
+     * @return HasMany
+     */
     public function tokens(): HasMany
     {
-        return $this->hasMany(PersonalAccessToken::class);
+        return $this->hasMany(PersonalAccessToken::class, 'tokenable_id')
+            ->where('tokenable_type', static::class);
     }
 
+    public function createToken(string $name, array $abilities = ['*']): NewAccessToken
+    {
+        return $this->tokens()->create([
+            'name' => $name,
+            'token' => hash('sha256', $plainTextToken = \Str::random(40)),
+            'abilities' => $abilities,
+        ]);
+    }
+
+    /**
+     * @param  Builder  $query
+     * @param  string  $column
+     * @param $value
+     *
+     * @return Builder
+     */
     public function scopeWhere(Builder $query, string $column, $value): Builder
     {
         return $query->where($column, $value);
     }
 
+    /**
+     * @param  string  $role
+     *
+     * @return bool
+     */
     public function hasRole(string $role): bool
     {
         return $this->is_admin && $role === 'admin';
