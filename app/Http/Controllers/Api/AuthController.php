@@ -19,6 +19,9 @@ use Spatie\OneTimePasswords\Enums\ConsumeOneTimePasswordResult;
 
 class AuthController extends Controller
 {
+    /**
+     * @return JsonResponse
+     */
     public function redirectToGoogle(): JsonResponse
     {
         $url = Socialite::driver('google')
@@ -29,6 +32,9 @@ class AuthController extends Controller
         return response()->json(['url' => $url]);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function handleGoogleCallback(): JsonResponse
     {
         try {
@@ -53,6 +59,11 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function sendOtp(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -69,6 +80,11 @@ class AuthController extends Controller
         return response()->json(['message' => 'OTP sent successfully']);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function verifyOtp(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -96,6 +112,11 @@ class AuthController extends Controller
         ], 401);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function getPasskeyOptions(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -120,6 +141,11 @@ class AuthController extends Controller
         return response()->json($publicKeyCredentialCreationOptions);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function registerPasskey(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -146,6 +172,9 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function getPasskeyAuthenticationOptions(): JsonResponse
     {
         $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::create(
@@ -160,6 +189,11 @@ class AuthController extends Controller
         return response()->json($publicKeyCredentialRequestOptions);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function authenticateWithPasskey(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [

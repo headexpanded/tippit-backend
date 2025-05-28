@@ -12,6 +12,9 @@ class GameController extends Controller
 {
     protected GameService $gameService;
 
+    /**
+     * @param  GameService  $gameService
+     */
     public function __construct(GameService $gameService)
     {
         $this->gameService = $gameService;
@@ -79,6 +82,12 @@ class GameController extends Controller
         return response()->json(null, 204);
     }
 
+    /**
+     * @param  Request  $request
+     * @param  Game  $game
+     *
+     * @return JsonResponse
+     */
     public function updateScore(Request $request, Game $game): JsonResponse
     {
         $validated = $request->validate([
@@ -95,6 +104,9 @@ class GameController extends Controller
         return response()->json($game);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function completed(): JsonResponse
     {
         $games = $this->gameService->getCompletedGames();

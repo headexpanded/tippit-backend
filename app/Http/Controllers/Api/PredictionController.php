@@ -15,6 +15,9 @@ class PredictionController extends Controller
 {
     protected PredictionService $predictionService;
 
+    /**
+     * @param  PredictionService  $predictionService
+     */
     public function __construct(PredictionService $predictionService)
     {
         $this->predictionService = $predictionService;
@@ -90,12 +93,22 @@ class PredictionController extends Controller
         }
     }
 
+    /**
+     * @param  Game  $game
+     *
+     * @return JsonResponse
+     */
     public function getGamePredictions(Game $game): JsonResponse
     {
         $predictions = $this->predictionService->getPredictionsForGame($game);
         return response()->json($predictions);
     }
 
+    /**
+     * @param  Game  $game
+     *
+     * @return JsonResponse
+     */
     public function getUserPredictionForGame(Game $game): JsonResponse
     {
         $prediction = $this->predictionService->getUserPredictionForGame(auth()->user(), $game);

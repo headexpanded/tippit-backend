@@ -15,11 +15,19 @@ class UserController extends Controller
 {
     protected UserService $userService;
 
+    /**
+     * @param  UserService  $userService
+     */
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -41,6 +49,11 @@ class UserController extends Controller
         ], 201);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -65,18 +78,29 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function logout(): JsonResponse
     {
         Auth::user()->tokens()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function profile(): JsonResponse
     {
         $user = Auth::user()->load(['statistics', 'predictions', 'miniLeagues']);
         return response()->json($user);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function updateProfile(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -92,7 +116,7 @@ class UserController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Verify current password if changing password
+        // Verify the current password if changing password
         if ($request->has('new_password')) {
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json(['error' => 'Current password is incorrect'], 422);
@@ -107,6 +131,9 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function getPredictions(): JsonResponse
     {
         $predictions = Auth::user()->predictions()
@@ -117,6 +144,9 @@ class UserController extends Controller
         return response()->json($predictions);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function getMiniLeagues(): JsonResponse
     {
         $miniLeagues = Auth::user()->miniLeagues()
@@ -126,18 +156,32 @@ class UserController extends Controller
         return response()->json($miniLeagues);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function index(): JsonResponse
     {
         $users = $this->userService->getActiveUsers();
         return response()->json($users);
     }
 
+    /**
+     * @param  User  $user
+     *
+     * @return JsonResponse
+     */
     public function show(User $user): JsonResponse
     {
         $user = $this->userService->getUserWithRelations($user);
         return response()->json($user);
     }
 
+    /**
+     * @param  Request  $request
+     * @param  User  $user
+     *
+     * @return JsonResponse
+     */
     public function update(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
@@ -151,12 +195,22 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    /**
+     * @param  User  $user
+     *
+     * @return JsonResponse
+     */
     public function destroy(User $user): JsonResponse
     {
         $this->userService->deleteUser($user);
         return response()->json(null, 204);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function updatePreferences(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -167,6 +221,11 @@ class UserController extends Controller
         return response()->json($user);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function search(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -177,12 +236,20 @@ class UserController extends Controller
         return response()->json($users);
     }
 
+    /**
+     * @return JsonResponse
+     */
     public function getTopUsers(): JsonResponse
     {
         $users = $this->userService->getTopUsers();
         return response()->json($users);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function sendPasswordResetLink(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -193,6 +260,11 @@ class UserController extends Controller
         return response()->json(['message' => 'Password reset link sent']);
     }
 
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
     public function resetPassword(Request $request): JsonResponse
     {
         $validated = $request->validate([

@@ -15,6 +15,9 @@ class MiniLeagueController extends Controller
 {
     protected MiniLeagueService $miniLeagueService;
 
+    /**
+     * @param  MiniLeagueService  $miniLeagueService
+     */
     public function __construct(MiniLeagueService $miniLeagueService)
     {
         $this->miniLeagueService = $miniLeagueService;
@@ -99,6 +102,12 @@ class MiniLeagueController extends Controller
         }
     }
 
+    /**
+     * @param  Request  $request
+     * @param  MiniLeague  $miniLeague
+     *
+     * @return JsonResponse
+     */
     public function addMember(Request $request, MiniLeague $miniLeague): JsonResponse
     {
         if ($miniLeague->created_by !== Auth::id()) {
@@ -118,6 +127,12 @@ class MiniLeagueController extends Controller
         }
     }
 
+    /**
+     * @param  Request  $request
+     * @param  MiniLeague  $miniLeague
+     *
+     * @return JsonResponse
+     */
     public function removeMember(Request $request, MiniLeague $miniLeague): JsonResponse
     {
         if ($miniLeague->created_by !== Auth::id()) {
@@ -137,6 +152,11 @@ class MiniLeagueController extends Controller
         }
     }
 
+    /**
+     * @param  MiniLeague  $miniLeague
+     *
+     * @return JsonResponse
+     */
     public function leave(MiniLeague $miniLeague): JsonResponse
     {
         // Cannot leave if you're the creator
@@ -152,6 +172,11 @@ class MiniLeagueController extends Controller
         }
     }
 
+    /**
+     * @param  MiniLeague  $miniLeague
+     *
+     * @return JsonResponse
+     */
     public function getRankings(MiniLeague $miniLeague): JsonResponse
     {
         if (!$miniLeague->users()->where('users.id', Auth::id())->exists()) {
