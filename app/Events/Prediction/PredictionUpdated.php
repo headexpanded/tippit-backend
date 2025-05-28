@@ -9,11 +9,17 @@ use Illuminate\Queue\SerializesModels;
 
 class PredictionUpdated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public Prediction $prediction;
     public array $oldValues;
 
+    /**
+     * @param  Prediction  $prediction
+     * @param  array  $oldValues
+     */
     public function __construct(Prediction $prediction, array $oldValues)
     {
         $this->prediction = $prediction;

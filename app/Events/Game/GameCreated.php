@@ -9,10 +9,15 @@ use Illuminate\Queue\SerializesModels;
 
 class GameCreated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public Game $game;
 
+    /**
+     * @param  Game  $game
+     */
     public function __construct(Game $game)
     {
         $this->game = $game;

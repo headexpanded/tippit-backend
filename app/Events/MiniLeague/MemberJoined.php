@@ -10,11 +10,17 @@ use Illuminate\Queue\SerializesModels;
 
 class MemberJoined
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public MiniLeague $miniLeague;
     public User $user;
 
+    /**
+     * @param  MiniLeague  $miniLeague
+     * @param  User  $user
+     */
     public function __construct(MiniLeague $miniLeague, User $user)
     {
         $this->miniLeague = $miniLeague;

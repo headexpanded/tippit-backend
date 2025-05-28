@@ -9,10 +9,15 @@ use Illuminate\Queue\SerializesModels;
 
 class MiniLeagueCreated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public MiniLeague $miniLeague;
 
+    /**
+     * @param  MiniLeague  $miniLeague
+     */
     public function __construct(MiniLeague $miniLeague)
     {
         $this->miniLeague = $miniLeague;
