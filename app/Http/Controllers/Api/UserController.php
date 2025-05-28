@@ -69,7 +69,7 @@ class UserController extends Controller
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = $this->userService->getUserByEmail($request->email);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -83,7 +83,8 @@ class UserController extends Controller
      */
     public function logout(): JsonResponse
     {
-        Auth::user()->tokens()->delete();
+        $user = Auth::user();
+        $user->tokens()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
 
@@ -92,7 +93,8 @@ class UserController extends Controller
      */
     public function profile(): JsonResponse
     {
-        $user = Auth::user()->load(['statistics', 'predictions', 'miniLeagues']);
+        $user = Auth::user();
+        $user->load(['statistics', 'predictions', 'miniLeagues']);
         return response()->json($user);
     }
 
@@ -136,7 +138,8 @@ class UserController extends Controller
      */
     public function getPredictions(): JsonResponse
     {
-        $predictions = Auth::user()->predictions()
+        $user = Auth::user();
+        $predictions = $user->predictions()
             ->with(['game.homeTeam', 'game.awayTeam'])
             ->orderBy('created_at', 'desc')
             ->get();
@@ -149,7 +152,8 @@ class UserController extends Controller
      */
     public function getMiniLeagues(): JsonResponse
     {
-        $miniLeagues = Auth::user()->miniLeagues()
+        $user = Auth::user();
+        $miniLeagues = $user->miniLeagues()
             ->with(['creator', 'users'])
             ->get();
 
@@ -217,7 +221,7 @@ class UserController extends Controller
             'preferences' => 'required|array',
         ]);
 
-        $user = $this->userService->updateUserPreferences(auth()->user(), $validated['preferences']);
+        $user = $this->userService->updateUserPreferences(Auth::user(), $validated['preferences']);
         return response()->json($user);
     }
 

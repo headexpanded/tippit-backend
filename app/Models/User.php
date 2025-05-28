@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\OneTimePasswords\HasOneTimePasswords;
+use Illuminate\Database\Eloquent\Builder;
 
 class User extends Authenticatable
 {
@@ -120,5 +121,20 @@ class User extends Authenticatable
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);
+    }
+
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(PersonalAccessToken::class);
+    }
+
+    public function scopeWhere(Builder $query, string $column, $value): Builder
+    {
+        return $query->where($column, $value);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->is_admin && $role === 'admin';
     }
 }
