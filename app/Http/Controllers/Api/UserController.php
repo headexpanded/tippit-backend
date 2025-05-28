@@ -50,35 +50,6 @@ class UserController extends Controller
     }
 
     /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function login(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
-        }
-
-        $user = $this->userService->getUserByEmail($request->email);
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
-    }
-
-    /**
      * @return JsonResponse
      */
     public function logout(): JsonResponse
