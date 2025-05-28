@@ -1,11 +1,12 @@
 <?php
-// Mini League Routes
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MiniLeagueController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Mini League Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('mini-leagues', MiniLeagueController::class);
     Route::post('mini-leagues/{miniLeague}/members', [MiniLeagueController::class, 'addMember']);

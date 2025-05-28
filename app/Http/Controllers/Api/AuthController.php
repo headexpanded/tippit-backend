@@ -4,18 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
-use Webauthn\PublicKeyCredentialSource;
-use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialUserEntity;
-use Webauthn\PublicKeyCredentialCreationOptions;
-use Webauthn\PublicKeyCredentialRequestOptions;
-use Spatie\OneTimePasswords\Enums\ConsumeOneTimePasswordResult;
 
 class AuthController extends Controller
 {
@@ -24,6 +20,7 @@ class AuthController extends Controller
      */
     public function redirectToGoogle(): JsonResponse
     {
+
         $url = Socialite::driver('google')
             ->stateless()
             ->redirect()
@@ -45,7 +42,7 @@ class AuthController extends Controller
             ], [
                 'name' => $googleUser->name,
                 'google_id' => $googleUser->id,
-                'password' => Hash::make(str_random(24)),
+                'password' => Hash::make(Str::random(24)),
             ]);
 
             $token = $user->createToken('google_token')->plainTextToken;
@@ -54,7 +51,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $token
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => 'Google authentication failed'], 401);
         }
     }
@@ -167,7 +164,7 @@ class AuthController extends Controller
             $user->save();
 
             return response()->json(['message' => 'Passkey registered successfully']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => 'Passkey registration failed'], 422);
         }
     }
@@ -220,7 +217,7 @@ class AuthController extends Controller
                 'user' => $user,
                 'token' => $token
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => 'Passkey authentication failed'], 401);
         }
     }

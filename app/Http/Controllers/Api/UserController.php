@@ -134,7 +134,8 @@ class UserController extends Controller
             if (!Hash::check($data['current_password'], $user->password)) {
                 return response()->json(['error' => 'Current password is incorrect'], 422);
             }
-            $user->password = Hash::make($data['new_password']);
+            $user->password = $data['new_password'];
+
         }
 
         if (isset($data['name'])) {

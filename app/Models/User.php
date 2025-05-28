@@ -12,14 +12,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\OneTimePasswords\HasOneTimePasswords;
+use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Sanctum\NewAccessToken;
 
 class User extends Authenticatable
 {
+    use HasOneTimePasswords;
+
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasOneTimePasswords;
+    use HasApiTokens;
+    use HasFactory;
+    use HasOneTimePasswords;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -133,6 +138,12 @@ class User extends Authenticatable
             ->where('tokenable_type', static::class);
     }
 
+    /**
+     * @param  string  $name
+     * @param  array  $abilities
+     *
+     * @return NewAccessToken
+     */
     public function createToken(string $name, array $abilities = ['*']): NewAccessToken
     {
         return $this->tokens()->create([
@@ -163,4 +174,16 @@ class User extends Authenticatable
     {
         return $this->is_admin && $role === 'admin';
     }
+
+    /**
+     * Set the user's password.
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setPasswordAttribute($value): void
+    {
+        $this->attributes['password'] = bcrypt($value);
+    }
+
 }
