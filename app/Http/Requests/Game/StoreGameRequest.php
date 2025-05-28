@@ -3,15 +3,30 @@
 namespace App\Http\Requests\Game;
 
 use Illuminate\Foundation\Http\FormRequest;
+use JetBrains\PhpStorm\ArrayShape;
 
 class StoreGameRequest extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize(): bool
     {
         return $this->user()->hasRole('admin');
     }
 
-    public function rules(): array
+    /**
+     * @return array[]
+     */
+    #[ArrayShape([
+        'home_team_id' => "string[]",
+        'away_team_id' => "string[]",
+        'match_date' => "string[]",
+        'match_time' => "string[]",
+        'lockout_time' => "string[]",
+        'competition' => "string[]",
+        'venue' => "string[]"
+    ])] public function rules(): array
     {
         return [
             'home_team_id' => ['required', 'exists:teams,id'],
@@ -24,7 +39,22 @@ class StoreGameRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    #[ArrayShape([
+        'home_team_id.required' => "string",
+        'away_team_id.required' => "string",
+        'away_team_id.different' => "string",
+        'match_date.required' => "string",
+        'match_date.after_or_equal' => "string",
+        'match_time.required' => "string",
+        'lockout_time.required' => "string",
+        'lockout_time.before' => "string",
+        'competition.required' => "string"
+    ])] public function messages(): array
     {
         return [
             'home_team_id.required' => 'Please select a home team.',

@@ -3,15 +3,25 @@
 namespace App\Http\Requests\Prediction;
 
 use Illuminate\Foundation\Http\FormRequest;
+use JetBrains\PhpStorm\ArrayShape;
 
 class StorePredictionRequest extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true; // Any authenticated user can make predictions
     }
 
-    public function rules(): array
+    /**
+     * @return array[]
+     */
+    #[ArrayShape([
+        'predicted_home_score' => "string[]",
+        'predicted_away_score' => "string[]",
+    ])] public function rules(): array
     {
         return [
             'predicted_home_score' => ['required', 'integer', 'min:0', 'max:20'],
@@ -19,7 +29,21 @@ class StorePredictionRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    #[ArrayShape([
+        'predicted_home_score.required' => "string",
+        'predicted_home_score.integer' => "string",
+        'predicted_home_score.min' => "string",
+        'predicted_home_score.max' => "string",
+        'predicted_away_score.required' => "string",
+        'predicted_away_score.integer' => "string",
+        'predicted_away_score.min' => "string",
+        'predicted_away_score.max' => "string"
+    ])] public function messages(): array
     {
         return [
             'predicted_home_score.required' => 'Please predict the home team score.',

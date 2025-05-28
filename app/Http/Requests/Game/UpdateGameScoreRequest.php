@@ -3,15 +3,25 @@
 namespace App\Http\Requests\Game;
 
 use Illuminate\Foundation\Http\FormRequest;
+use JetBrains\PhpStorm\ArrayShape;
 
 class UpdateGameScoreRequest extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize(): bool
     {
         return $this->user()->hasRole('admin');
     }
 
-    public function rules(): array
+    /**
+     * @return array[]
+     */
+    #[ArrayShape([
+        'home_score' => "string[]",
+        'away_score' => "string[]",
+    ])] public function rules(): array
     {
         return [
             'home_score' => ['required', 'integer', 'min:0'],
@@ -19,7 +29,19 @@ class UpdateGameScoreRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    #[ArrayShape([
+        'home_score.required' => "string",
+        'home_score.integer' => "string",
+        'home_score.min' => "string",
+        'away_score.required' => "string",
+        'away_score.integer' => "string",
+        'away_score.min' => "string",
+    ])] public function messages(): array
     {
         return [
             'home_score.required' => 'Please enter the home team score.',

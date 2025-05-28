@@ -3,15 +3,25 @@
 namespace App\Http\Requests\MiniLeague;
 
 use Illuminate\Foundation\Http\FormRequest;
+use JetBrains\PhpStorm\ArrayShape;
 
 class StoreMiniLeagueRequest extends FormRequest
 {
+    /**
+     * @return bool
+     */
     public function authorize(): bool
     {
         return true; // Any authenticated user can create a mini league
     }
 
-    public function rules(): array
+    /**
+     * @return array[]
+     */
+    #[ArrayShape([
+        'name' => "string[]",
+        'description' => "string[]",
+    ])] public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:50', 'min:3'],
@@ -19,7 +29,19 @@ class StoreMiniLeagueRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    #[ArrayShape([
+        'name.required' => "string",
+        'name.string' => "string",
+        'name.max' => "string",
+        'name.min' => "string",
+        'description.string' => "string",
+        'description.max' => "string"
+    ])] public function messages(): array
     {
         return [
             'name.required' => 'Please enter a name for your mini league.',
