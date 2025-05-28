@@ -16,8 +16,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // User Routes
-
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
