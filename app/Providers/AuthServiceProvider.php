@@ -18,6 +18,9 @@ class AuthServiceProvider extends ServiceProvider
         MiniLeague::class => MiniLeaguePolicy::class,
     ];
 
+    /**
+     * @return void
+     */
     public function boot(): void
     {
         $this->registerPolicies();

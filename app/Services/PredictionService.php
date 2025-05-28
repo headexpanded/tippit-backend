@@ -12,19 +12,30 @@ use Illuminate\Support\Collection;
 
 class PredictionService extends BaseService
 {
+    /**
+     * @param  Model  $model
+     */
     public function __construct(Prediction $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * @param  User  $user
+     * @param  Game  $game
+     * @param  array  $data
+     *
+     * @return Prediction
+     * @throws \Exception
+     */
     public function createPrediction(User $user, Game $game, array $data): Prediction
     {
-        // Check if game is locked
+        // Check if the game is locked
         if (now()->isAfter($game->lockout_time)) {
             throw new \Exception('Game is locked. Cannot make predictions.');
         }
 
-        // Check if prediction already exists
+        // Check if the prediction already exists
         if ($this->model->where('user_id', $user->id)
             ->where('game_id', $game->id)
             ->exists()) {
@@ -43,11 +54,18 @@ class PredictionService extends BaseService
         return $prediction;
     }
 
+    /**
+     * @param  Prediction  $prediction
+     * @param  array  $data
+     *
+     * @return Prediction
+     * @throws \Exception
+     */
     public function updatePrediction(Prediction $prediction, array $data): Prediction
     {
         $game = $prediction->game;
 
-        // Check if game is locked
+        // Check if the game is locked
         if (now()->isAfter($game->lockout_time)) {
             throw new \Exception('Game is locked. Cannot update prediction.');
         }
@@ -67,6 +85,11 @@ class PredictionService extends BaseService
         return $prediction;
     }
 
+    /**
+     * @param  User  $user
+     *
+     * @return Collection
+     */
     public function getUserPredictions(User $user): Collection
     {
         return $this->model->with(['game.homeTeam', 'game.awayTeam'])
@@ -75,6 +98,11 @@ class PredictionService extends BaseService
             ->get();
     }
 
+    /**
+     * @param  Game  $game
+     *
+     * @return Collection
+     */
     public function getPredictionsForGame(Game $game): Collection
     {
         return $this->model->with('user')
@@ -82,6 +110,12 @@ class PredictionService extends BaseService
             ->get();
     }
 
+    /**
+     * @param  User  $user
+     * @param  Game  $game
+     *
+     * @return Prediction|null
+     */
     public function getUserPredictionForGame(User $user, Game $game): ?Prediction
     {
         return $this->model->where('user_id', $user->id)
@@ -89,11 +123,17 @@ class PredictionService extends BaseService
             ->first();
     }
 
+    /**
+     * @param  Prediction  $prediction
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function deletePrediction(Prediction $prediction): bool
     {
         $game = $prediction->game;
 
-        // Check if game is locked
+        // Check if the game is locked
         if (now()->isAfter($game->lockout_time)) {
             throw new \Exception('Game is locked. Cannot delete prediction.');
         }

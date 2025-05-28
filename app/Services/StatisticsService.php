@@ -5,14 +5,23 @@ namespace App\Services;
 use App\Models\SiteStatistics;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\ArrayShape;
 
 class StatisticsService extends BaseService
 {
+    /**
+     * @param  Model  $model
+     */
     public function __construct(SiteStatistics $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * @param  User  $user
+     *
+     * @return array|int[]
+     */
     public function getUserStatistics(User $user): array
     {
         $statistics = $user->statistics;
@@ -34,6 +43,9 @@ class StatisticsService extends BaseService
         ];
     }
 
+    /**
+     * @return Collection
+     */
     public function getGlobalRankings(): Collection
     {
         return User::with('statistics')
@@ -52,6 +64,9 @@ class StatisticsService extends BaseService
             ->values();
     }
 
+    /**
+     * @return SiteStatistics
+     */
     public function getSiteStatistics(): SiteStatistics
     {
         $statistics = $this->model->first();
@@ -69,6 +84,11 @@ class StatisticsService extends BaseService
         return $statistics;
     }
 
+    /**
+     * @param  string  $season
+     *
+     * @return Collection
+     */
     public function getSeasonStatistics(string $season): Collection
     {
         $users = User::with(['statistics', 'predictions' => function ($query) use ($season) {
@@ -93,7 +113,19 @@ class StatisticsService extends BaseService
           ->values();
     }
 
-    public function getPredictionAccuracy(User $user): array
+    /**
+     * @param  User  $user
+     *
+     * @return array
+     */
+    #[ArrayShape([
+        'total' => "int",
+        'correct' => "int",
+        'exact_score' => "int",
+        'correct_result' => "int",
+        'incorrect' => "int",
+        'percentage' => "float|int"
+    ])] public function getPredictionAccuracy(User $user): array
     {
         $predictions = $user->predictions()
             ->with('game')
@@ -116,6 +148,9 @@ class StatisticsService extends BaseService
         return $accuracy;
     }
 
+    /**
+     * @return void
+     */
     public function updateSiteStatistics(): void
     {
         $statistics = $this->getSiteStatistics();
