@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\MiniLeagueController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
@@ -17,13 +16,10 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // User Routes
-Route::post('register', [UserController::class, 'register']);
-Route::post('login', [LoginController::class, 'authenticate']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [UserController::class, 'logout']);
     Route::get('profile', [UserController::class, 'profile']);
-    Route::put('profile', [UserController::class, 'updateProfile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
     Route::get('mini-leagues', [UserController::class, 'getMiniLeagues']);
 

@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 
 class UserService extends BaseService
 {
@@ -15,34 +13,6 @@ class UserService extends BaseService
     public function __construct(User $model)
     {
         parent::__construct($model);
-    }
-
-    /**
-     * @param  array  $data
-     *
-     * @return User
-     */
-    public function createUser(array $data): User
-    {
-        $data['password'] = Hash::make($data['password']);
-
-        return $this->model->create($data);
-    }
-
-    /**
-     * @param  User  $user
-     * @param  array  $data
-     *
-     * @return User
-     */
-    public function updateUser(User $user, array $data): User
-    {
-        if (isset($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
-
-        $user->update($data);
-        return $user;
     }
 
     /**
@@ -93,42 +63,6 @@ class UserService extends BaseService
     public function updateLastLogin(User $user): void
     {
         $user->update(['last_login_at' => now()]);
-    }
-
-    /**
-     * @param  string  $email
-     *
-     * @return string
-     */
-    public function sendPasswordResetLink(string $email): string
-    {
-        return Password::sendResetLink(['email' => $email]);
-    }
-
-    /**
-     * @param  string  $email
-     * @param  string  $password
-     * @param  string  $token
-     *
-     * @return bool
-     */
-    public function resetPassword(string $email, string $password, string $token): bool
-    {
-        $status = Password::reset(
-            [
-                'email' => $email,
-                'password' => $password,
-                'password_confirmation' => $password,
-                'token' => $token,
-            ],
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->save();
-            }
-        );
-
-        return $status === Password::PASSWORD_RESET;
     }
 
     /**

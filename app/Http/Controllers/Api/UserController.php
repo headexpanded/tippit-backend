@@ -8,8 +8,6 @@ use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -24,45 +22,6 @@ class UserController extends Controller
     }
 
     /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function register(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = $this->userService->createUser($request->all());
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ], 201);
-    }
-
-    /**
-     * @return JsonResponse
-     */
-    public function logout(): JsonResponse
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        if ($user instanceof User) {
-            $user->tokens()->delete();
-        }
-        return response()->json(['message' => 'Logged out successfully']);
-    }
-
-    /**
      * @return JsonResponse
      */
     public function profile(): JsonResponse
@@ -74,51 +33,6 @@ class UserController extends Controller
             return response()->json($user);
         }
         return response()->json(['error' => 'User not found'], 404);
-    }
-
-    /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function updateProfile(Request $request): JsonResponse
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        if (!$user instanceof User) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
-            'email' => 'string|email|max:255|unique:users,email,' . $user->id,
-            'current_password' => 'required_with:new_password|string',
-            'new_password' => 'string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $data = $request->all();
-        if (isset($data['new_password'])) {
-            if (!Hash::check($data['current_password'], $user->password)) {
-                return response()->json(['error' => 'Current password is incorrect'], 422);
-            }
-            $user->password = $data['new_password'];
-
-        }
-
-        if (isset($data['name'])) {
-            $user->name = $data['name'];
-        }
-        if (isset($data['email'])) {
-            $user->email = $data['email'];
-        }
-
-        $user->save();
-
-        return response()->json($user);
     }
 
     /**
@@ -179,25 +93,6 @@ class UserController extends Controller
     }
 
     /**
-     * @param  Request  $request
-     * @param  User  $user
-     *
-     * @return JsonResponse
-     */
-    public function update(Request $request, User $user): JsonResponse
-    {
-        $validated = $request->validate([
-            'name' => 'string|max:255',
-            'email' => 'string|email|max:255|unique:users,email,' . $user->id,
-            'username' => 'string|max:255|unique:users,username,' . $user->id,
-            'password' => 'nullable|string|min:8',
-        ]);
-
-        $user = $this->userService->updateUser($user, $validated);
-        return response()->json($user);
-    }
-
-    /**
      * @param  User  $user
      *
      * @return JsonResponse
@@ -251,46 +146,5 @@ class UserController extends Controller
     {
         $users = $this->userService->getTopUsers();
         return response()->json($users);
-    }
-
-    /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function sendPasswordResetLink(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'email' => 'required|email',
-        ]);
-
-        $status = $this->userService->sendPasswordResetLink($validated['email']);
-        return response()->json(['message' => 'Password reset link sent']);
-    }
-
-    /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function resetPassword(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
-            'token' => 'required|string',
-        ]);
-
-        $success = $this->userService->resetPassword(
-            $validated['email'],
-            $validated['password'],
-            $validated['token']
-        );
-
-        if ($success) {
-            return response()->json(['message' => 'Password reset successfully']);
-        }
-
-        return response()->json(['message' => 'Unable to reset password'], 400);
     }
 }
