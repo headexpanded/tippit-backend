@@ -28,7 +28,7 @@ class MiniLeagueController extends Controller
      */
     public function index(): JsonResponse
     {
-        $miniLeagues = $this->miniLeagueService->getUserMiniLeagues(auth()->user());
+        $miniLeagues = $this->miniLeagueService->getUserMiniLeagues();
         return response()->json($miniLeagues);
     }
 
