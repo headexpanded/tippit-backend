@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('league_rankings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mini_league_id')->constrained()->onDelete('cascade');
+            $table->foreignId('league_id')->constrained()->onDelete('cascade');
             $table->integer('total_points')->default(0);
             $table->decimal('average_points', 5, 2)->default(0);
             $table->integer('member_count')->default(0);
             $table->timestamps();
 
-            $table->unique('mini_league_id');
+            $table->unique('league_id');
         });
     }
 

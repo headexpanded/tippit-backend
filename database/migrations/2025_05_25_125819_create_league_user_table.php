@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mini_league_user', function (Blueprint $table) {
+        Schema::create('league_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mini_league_id')->constrained()->onDelete('cascade');
+            $table->foreignId('league_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamp('joined_at')->useCurrent();
             $table->timestamps();
 
-            $table->unique(['mini_league_id', 'user_id']);
+            $table->unique(['league_id', 'user_id']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mini_league_user');
+        Schema::dropIfExists('league_user');
     }
 };

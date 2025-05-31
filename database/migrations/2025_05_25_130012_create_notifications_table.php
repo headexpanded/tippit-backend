@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->enum('type', [
                 'prediction_reminder',
-                'match_result',
+                'game_result',
                 'league_invitation',
                 'system_notification'
             ]);

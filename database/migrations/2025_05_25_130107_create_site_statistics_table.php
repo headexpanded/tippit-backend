@@ -16,8 +16,8 @@ return new class extends Migration
             $table->integer('total_users')->default(0);
             $table->integer('active_users')->default(0);
             $table->integer('total_predictions')->default(0);
-            $table->integer('total_matches')->default(0);
-            $table->integer('total_mini_leagues')->default(0);
+            $table->integer('total_games')->default(0);
+            $table->integer('total_leagues')->default(0);
             $table->timestamps();
         });
     }
