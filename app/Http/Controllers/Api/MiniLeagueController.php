@@ -28,7 +28,12 @@ class MiniLeagueController extends Controller
      */
     public function index(): JsonResponse
     {
-        $miniLeagues = $this->miniLeagueService->getUserMiniLeagues();
+        $user = auth()->user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $miniLeagues = $this->miniLeagueService->getUserMiniLeagues($user);
         return response()->json($miniLeagues);
     }
 
@@ -43,7 +48,12 @@ class MiniLeagueController extends Controller
         ]);
 
         try {
-            $miniLeague = $this->miniLeagueService->createMiniLeague(auth()->user(), $validated);
+            $user = auth()->user();
+            if (!$user instanceof User) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            $miniLeague = $this->miniLeagueService->createMiniLeague($user, $validated);
             return response()->json($miniLeague, 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
@@ -165,7 +175,12 @@ class MiniLeagueController extends Controller
         }
 
         try {
-            $this->miniLeagueService->leaveMiniLeague($miniLeague, auth()->user());
+            $user = auth()->user();
+            if (!$user instanceof User) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            $this->miniLeagueService->leaveMiniLeague($miniLeague, $user);
             return response()->json(['message' => 'Left mini league successfully']);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
