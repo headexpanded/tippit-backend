@@ -68,7 +68,6 @@ class UserAndLeagueSeeder extends Seeder
             }
         }
         DB::table('league_user')->insert($leagueUsers);
-
         // Create user statistics for all users
         $userStats = [];
         for ($i = 1; $i <= 35; $i++) {

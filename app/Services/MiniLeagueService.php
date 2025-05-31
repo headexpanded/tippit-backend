@@ -12,11 +12,11 @@ use Illuminate\Support\Collection;
 class MiniLeagueService extends BaseService
 {
     /**
-     * @param  Model  $model
+     * @param  MiniLeague  $miniLeague
      */
-    public function __construct(MiniLeague $model)
+    public function __construct(MiniLeague $miniLeague)
     {
-        parent::__construct($model);
+        parent::__construct($miniLeague);
     }
 
     /**
