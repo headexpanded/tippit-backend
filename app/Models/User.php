@@ -15,6 +15,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\OneTimePasswords\Models\Concerns\HasOneTimePasswords;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Sanctum\NewAccessToken;
+use Illuminate\Support\Str;
+
 
 class User extends Authenticatable
 {
@@ -32,7 +34,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
         'google_id',
@@ -148,7 +150,7 @@ class User extends Authenticatable
     {
         return $this->tokens()->create([
             'name' => $name,
-            'token' => hash('sha256', $plainTextToken = \Str::random(40)),
+            'token' => hash('sha256', $plainTextToken = Str::random(64)),
             'abilities' => $abilities,
         ]);
     }
