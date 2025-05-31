@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Prediction;
+use App\Models\User;
 use App\Services\PredictionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -111,7 +112,11 @@ class PredictionController extends Controller
      */
     public function getUserPredictionForGame(Game $game): JsonResponse
     {
-        $prediction = $this->predictionService->getUserPredictionForGame(auth()->user(), $game);
+        $user = auth()->user();
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        $prediction = $this->predictionService->getUserPredictionForGame($user, $game);
         return response()->json($prediction);
     }
 }
