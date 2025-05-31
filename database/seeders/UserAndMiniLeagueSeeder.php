@@ -74,12 +74,12 @@ class UserAndMiniLeagueSeeder extends Seeder
         for ($i = 1; $i <= 35; $i++) {
             $userStats[] = [
                 'user_id' => $i,
-                'total_points' => 0,
-                'total_predictions' => 0,
-                'correct_predictions' => 0,
-                'exact_score_predictions' => 0,
-                'current_rank' => null,
-                'best_rank' => null,
+                'total_points' => $i + 1,
+                'total_predictions' => $i + 1,
+                'correct_predictions' => $i + 1,
+                'exact_score_predictions' => $i + 1,
+                'current_rank' => $i + 1,
+                'best_rank' => $i + 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
