@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('matches', function (Blueprint $table) {
+        Schema::create('games', function (Blueprint $table) {
             $table->id();
             $table->foreignId('home_team_id')->constrained('teams');
             $table->foreignId('away_team_id')->constrained('teams');
-            $table->date('match_date');
-            $table->time('match_time');
+            $table->date('game_date');
+            $table->time('game_time');
             $table->string('season');
             $table->integer('home_score')->nullable();
             $table->integer('away_score')->nullable();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('matches');
+        Schema::dropIfExists('games');
     }
 };

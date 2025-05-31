@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * @return void
+     */
     public function up()
     {
         Schema::create('one_time_passwords', function (Blueprint $table) {

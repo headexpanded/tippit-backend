@@ -18,7 +18,7 @@ class UserAndLeagueSeeder extends Seeder
         $users = [];
         for ($i = 1; $i <= 35; $i++) {
             $users[] = [
-                'name' => "User $i",
+                'username' => "User $i",
                 'email' => "user$i@example.com",
                 'password' => Hash::make('password'),
                 'created_at' => now(),
@@ -28,7 +28,7 @@ class UserAndLeagueSeeder extends Seeder
         DB::table('users')->insert($users);
 
         // Create 3 mini leagues
-        $miniLeagues = [
+        $leagues = [
             [
                 'name' => 'The Champions League',
                 'description' => 'For the best of the best',
@@ -51,15 +51,15 @@ class UserAndLeagueSeeder extends Seeder
                 'updated_at' => now(),
             ],
         ];
-        DB::table('mini_leagues')->insert($miniLeagues);
+        DB::table('leagues')->insert($leagues);
 
         // Add 8 users to each mini league
-        $miniLeagueUsers = [];
+        $leagueUsers = [];
         for ($leagueId = 1; $leagueId <= 3; $leagueId++) {
             $startUser = ($leagueId - 1) * 8 + 1;
             for ($i = 0; $i < 8; $i++) {
-                $miniLeagueUsers[] = [
-                    'mini_league_id' => $leagueId,
+                $leagueUsers[] = [
+                    'league_id' => $leagueId,
                     'user_id' => $startUser + $i,
                     'joined_at' => now(),
                     'created_at' => now(),
@@ -67,19 +67,18 @@ class UserAndLeagueSeeder extends Seeder
                 ];
             }
         }
-        DB::table('mini_league_user')->insert($miniLeagueUsers);
-
+        DB::table('league_user')->insert($leagueUsers);
         // Create user statistics for all users
         $userStats = [];
         for ($i = 1; $i <= 35; $i++) {
             $userStats[] = [
                 'user_id' => $i,
-                'total_points' => $i + 1,
-                'total_predictions' => $i + 1,
-                'correct_predictions' => $i + 1,
-                'exact_score_predictions' => $i + 1,
-                'current_rank' => $i + 1,
-                'best_rank' => $i + 1,
+                'total_points' => 0,
+                'total_predictions' => 0,
+                'correct_predictions' => 0,
+                'exact_score_predictions' => 0,
+                'current_rank' => null,
+                'best_rank' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -90,7 +89,7 @@ class UserAndLeagueSeeder extends Seeder
         $leagueRankings = [];
         for ($i = 1; $i <= 3; $i++) {
             $leagueRankings[] = [
-                'mini_league_id' => $i,
+                'league_id' => $i,
                 'total_points' => 0,
                 'average_points' => 0,
                 'member_count' => 8,
