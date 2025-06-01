@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Http\Requests\MiniLeague;
+namespace App\Http\Requests\League;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use JetBrains\PhpStorm\ArrayShape;
 
-class StoreMiniLeagueRequest extends FormRequest
+class StoreLeagueRequest extends FormRequest
 {
     /**
-     * @return bool
+     * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true; // Any authenticated user can create a mini league
+        return true;
     }
 
     /**

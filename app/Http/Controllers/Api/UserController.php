@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -57,7 +59,7 @@ class UserController extends Controller
     /**
      * @return JsonResponse
      */
-    public function getMiniLeagues(): JsonResponse
+    public function getLeagues(): JsonResponse
     {
         /** @var User $user */
         $user = Auth::user();
@@ -65,20 +67,19 @@ class UserController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        $miniLeagues = $user->miniLeagues()
+        $leagues = $user->miniLeagues()
             ->with(['creator', 'users'])
             ->get();
 
-        return response()->json($miniLeagues);
+        return response()->json($leagues);
     }
 
     /**
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function index(): JsonResponse
+    public function index(): AnonymousResourceCollection
     {
-        $users = $this->userService->getActiveUsers();
-        return response()->json($users);
+        return UserResource::collection(User::all());
     }
 
     /**

@@ -3,74 +3,73 @@
 namespace App\Services;
 
 use App\Events\MiniLeague\MemberJoined;
-use App\Events\MiniLeague\MiniLeagueCreated;
-use App\Models\MiniLeague;
+use App\Models\League;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Collection;
 
-class MiniLeagueService extends BaseService
+class LeagueService extends BaseService
 {
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      */
-    public function __construct(MiniLeague $miniLeague)
+    public function __construct(League $league)
     {
-        parent::__construct($miniLeague);
+        parent::__construct($league);
     }
 
     /**
      * @param  User  $creator
      * @param  array  $data
      *
-     * @return MiniLeague
+     * @return League
      */
-    public function createMiniLeague(User $creator, array $data): MiniLeague
+    public function createLeague(User $creator, array $data): League
     {
-        $miniLeague = $this->model->create([
+        $league = $this->model->create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'created_by' => $creator->id,
         ]);
 
         // Add creator as first member
-        $miniLeague->users()->attach($creator->id, ['joined_at' => now()]);
+        $league->users()->attach($creator->id, ['joined_at' => now()]);
 
-        event(new MiniLeagueCreated($miniLeague));
+        event(new LeagueCreated($league));
 
-        return $miniLeague;
+        return $league;
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $League
      * @param  array  $data
      *
-     * @return MiniLeague
+     * @return League
      * @throws Exception
      */
-    public function updateMiniLeague(MiniLeague $miniLeague, array $data): MiniLeague
+    public function updateLeague(League $league, array $data): League
     {
-        if ($miniLeague->created_by !== auth()->id()) {
+        if ($league->created_by !== auth()->id()) {
             throw new Exception('Only the creator can update the mini league.');
         }
 
-        $miniLeague->update($data);
-        return $miniLeague;
+        $league->update($data);
+        return $league;
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      *
      * @return bool
      * @throws Exception
      */
-    public function deleteMiniLeague(MiniLeague $miniLeague): bool
+    public function deleteLeague(League $league): bool
     {
-        if ($miniLeague->created_by !== auth()->id()) {
-            throw new Exception('Only the creator can delete the mini league.');
+        if ($league->created_by !== auth()->id()) {
+            throw new Exception('Only the creator can delete the league.');
         }
 
-        return $miniLeague->delete();
+        return $league->delete();
     }
 
     /**
@@ -78,7 +77,7 @@ class MiniLeagueService extends BaseService
      *
      * @return Collection
      */
-    public function getUserMiniLeagues(User $user): Collection
+    public function getUserLeagues(User $user): Collection
     {
         return $this->model->with(['creator', 'users'])
             ->whereHas('users', function ($query) use ($user) {
@@ -88,79 +87,79 @@ class MiniLeagueService extends BaseService
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      * @param  User  $user
      *
      * @return void
      * @throws Exception
      */
-    public function addMember(MiniLeague $miniLeague, User $user): void
+    public function addMember(League $league, User $user): void
     {
-        if ($miniLeague->created_by !== auth()->id()) {
+        if ($league->created_by !== auth()->id()) {
             throw new Exception('Only the creator can add members.');
         }
 
         // Check if the league is full
-        if ($miniLeague->users()->count() >= 10) {
+        if ($league->users()->count() >= 10) {
             throw new Exception('Mini league is full.');
         }
 
         // Check if the user is already a member
-        if ($miniLeague->users()->where('users.id', $user->id)->exists()) {
+        if ($league->users()->where('users.id', $user->id)->exists()) {
             throw new Exception('User is already a member.');
         }
 
-        $miniLeague->users()->attach($user->id, ['joined_at' => now()]);
+        $league->users()->attach($user->id, ['joined_at' => now()]);
 
-        event(new MemberJoined($miniLeague, $user));
+        event(new MemberJoined($league, $user));
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      * @param  User  $user
      *
      * @return void
      * @throws Exception
      */
-    public function removeMember(MiniLeague $miniLeague, User $user): void
+    public function removeMember(League $league, User $user): void
     {
-        if ($miniLeague->created_by !== auth()->id()) {
+        if ($league->created_by !== auth()->id()) {
             throw new Exception('Only the creator can remove members.');
         }
 
         // Cannot remove the creator
-        if ($user->id === $miniLeague->created_by) {
+        if ($user->id === $league->created_by) {
             throw new Exception('Cannot remove the league creator.');
         }
 
-        $miniLeague->users()->detach($user->id);
+        $league->users()->detach($user->id);
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      * @param  User  $user
      *
      * @return void
      * @throws Exception
      */
-    public function leaveMiniLeague(MiniLeague $miniLeague, User $user): void
+    public function leaveLeague(League $league, User $user): void
     {
         // Cannot leave if you're the creator
-        if ($user->id === $miniLeague->created_by) {
+        if ($user->id === $league->created_by) {
             throw new Exception('League creator cannot leave. Transfer ownership or delete the league.');
         }
 
-        $miniLeague->users()->detach($user->id);
+        $league->users()->detach($user->id);
     }
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      *
      * @return Collection
      */
-    public function getRankings(MiniLeague $miniLeague): Collection
+    public function getRankings(League $league): Collection
     {
-        return $miniLeague->users()
+        return $league->users()
             ->with('statistics')
             ->get()
             ->map(function ($user) {

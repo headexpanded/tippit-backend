@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class MiniLeague extends Model
+class League extends Model
 {
     protected $fillable = [
         'name',
@@ -19,7 +19,7 @@ class MiniLeague extends Model
     /**
      * @return BelongsTo
      */
-    public function creator(): BelongsTo
+    public function creator() : BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -30,8 +30,8 @@ class MiniLeague extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
-            ->withTimestamps()
-            ->withPivot('joined_at');
+                    ->withTimestamps()
+                    ->withPivot('joined_at');
     }
 
     /**
@@ -39,7 +39,7 @@ class MiniLeague extends Model
      */
     public function messages(): HasMany
     {
-        return $this->hasMany(MiniLeagueMessage::class);
+        return $this->hasMany(LeagueMessage::class);
     }
 
     /**
