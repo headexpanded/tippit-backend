@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,16 +18,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Laravel\Sanctum\NewAccessToken;
 use Illuminate\Support\Str;
 
-
 class User extends Authenticatable
 {
-    use HasOneTimePasswords;
-
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens;
     use HasFactory;
     use HasOneTimePasswords;
     use Notifiable;
+
+    /** @use HasFactory<UserFactory> */
 
     /**
      * The attributes that are mass assignable.
