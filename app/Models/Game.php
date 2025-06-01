@@ -11,8 +11,8 @@ class Game extends Model
     protected $fillable = [
         'home_team_id',
         'away_team_id',
-        'match_date',
-        'match_time',
+        'game_date',
+        'game_time',
         'season',
         'home_score',
         'away_score',
@@ -21,8 +21,8 @@ class Game extends Model
     ];
 
     protected $casts = [
-        'match_date' => 'date',
-        'match_time' => 'datetime',
+        'game_date' => 'date',
+        'game_time' => 'datetime',
         'lockout_time' => 'datetime',
         'home_score' => 'integer',
         'away_score' => 'integer',

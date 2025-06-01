@@ -3,6 +3,7 @@
 namespace App\Listeners\Game;
 
 use App\Events\Game\GameScoreUpdated;
+use App\Events\League\RankingsUpdated;
 use App\Notifications\GameScoreUpdated as GameScoreUpdatedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -35,7 +36,7 @@ class ProcessGameScoreUpdate implements ShouldQueue
             // Update mini league rankings if the user is in any mini leagues
             $miniLeagues = $user->miniLeagues;
             foreach ($miniLeagues as $miniLeague) {
-                event(new \App\Events\MiniLeague\RankingsUpdated($miniLeague));
+                event(new RankingsUpdated($miniLeague));
             }
         }
     }

@@ -11,14 +11,14 @@ class SiteStatistics extends Model
         'active_users',
         'total_predictions',
         'total_matches',
-        'total_mini_leagues',
+        'total_leagues',
     ];
 
     protected $casts = [
         'total_users' => 'integer',
         'active_users' => 'integer',
         'total_predictions' => 'integer',
-        'total_matches' => 'integer',
-        'total_mini_leagues' => 'integer',
+        'total_games' => 'integer',
+        'total_leagues' => 'integer',
     ];
 }

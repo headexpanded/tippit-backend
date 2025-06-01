@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LeagueRanking extends Model
 {
     protected $fillable = [
-        'mini_league_id',
+        'league_id',
         'total_points',
         'average_points',
         'member_count',
@@ -23,8 +23,8 @@ class LeagueRanking extends Model
     /**
      * @return BelongsTo
      */
-    public function miniLeague(): BelongsTo
+    public function league(): BelongsTo
     {
-        return $this->belongsTo(MiniLeague::class);
+        return $this->belongsTo(League::class);
     }
 }

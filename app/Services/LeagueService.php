@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Events\MiniLeague\MemberJoined;
+use App\Events\League\MemberJoined;
 use App\Models\League;
 use App\Models\User;
 use Exception;

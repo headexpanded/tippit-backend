@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Listeners\MiniLeague;
+namespace App\Listeners\League;
 
-use App\Events\MiniLeague\MemberJoined;
-use App\Notifications\MemberJoinedMiniLeague;
+use App\Events\League\MemberJoined;
+use App\Notifications\MemberJoinedLeague;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -18,21 +18,21 @@ class NotifyMemberJoined implements ShouldQueue
      */
     public function handle(MemberJoined $event): void
     {
-        $miniLeague = $event->miniLeague;
+        $league = $event->league;
         $newMember = $event->user;
 
         // Notify the league creator
-        $creator = $miniLeague->creator;
-        $creator->notify(new MemberJoinedMiniLeague($miniLeague, $newMember));
+        $creator = $league->creator;
+        $creator->notify(new MemberJoinedLeague($league, $newMember));
 
         // Notify other members
-        $otherMembers = $miniLeague->users()
+        $otherMembers = $league->users()
             ->where('users.id', '!=', $newMember->id)
             ->where('users.id', '!=', $creator->id)
             ->get();
 
         foreach ($otherMembers as $member) {
-            $member->notify(new MemberJoinedMiniLeague($miniLeague, $newMember));
+            $member->notify(new MemberJoinedLeague($league, $newMember));
         }
     }
 }

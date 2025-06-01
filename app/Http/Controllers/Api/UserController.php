@@ -67,7 +67,7 @@ class UserController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        $leagues = $user->miniLeagues()
+        $leagues = $user->leagues()
             ->with(['creator', 'users'])
             ->get();
 
