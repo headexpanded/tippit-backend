@@ -2,7 +2,7 @@
 
 namespace App\Events\MiniLeague;
 
-use App\Models\MiniLeague;
+use App\Models\League;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -14,16 +14,16 @@ class MemberJoined
     use InteractsWithSockets;
     use SerializesModels;
 
-    public MiniLeague $miniLeague;
+    public League $league;
     public User $user;
 
     /**
-     * @param  MiniLeague  $miniLeague
+     * @param  League  $league
      * @param  User  $user
      */
-    public function __construct(MiniLeague $miniLeague, User $user)
+    public function __construct(League $league, User $user)
     {
-        $this->miniLeague = $miniLeague;
+        $this->league = $league;
         $this->user = $user;
     }
 }

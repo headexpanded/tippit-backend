@@ -98,9 +98,9 @@ class User extends Authenticatable
     /**
      * @return BelongsToMany
      */
-    public function miniLeagues(): BelongsToMany
+    public function leagues(): BelongsToMany
     {
-        return $this->belongsToMany(MiniLeague::class)
+        return $this->belongsToMany(League::class)
             ->withTimestamps()
             ->withPivot('joined_at');
     }
@@ -108,9 +108,9 @@ class User extends Authenticatable
     /**
      * @return HasMany
      */
-    public function createdMiniLeagues(): HasMany
+    public function createdLeagues(): HasMany
     {
-        return $this->hasMany(MiniLeague::class, 'created_by');
+        return $this->hasMany(League::class, 'created_by');
     }
 
     /**

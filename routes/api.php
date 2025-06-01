@@ -1,25 +1,26 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\MiniLeagueController;
+use App\Http\Controllers\Api\LeagueController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Mini League Routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('mini-leagues', MiniLeagueController::class);
-    Route::post('mini-leagues/{miniLeague}/members', [MiniLeagueController::class, 'addMember']);
-    Route::delete('mini-leagues/{miniLeague}/members', [MiniLeagueController::class, 'removeMember']);
-    Route::post('mini-leagues/{miniLeague}/leave', [MiniLeagueController::class, 'leave']);
-    Route::get('mini-leagues/{miniLeague}/rankings', [MiniLeagueController::class, 'getRankings']);
+    Route::apiResource('leagues', LeagueController::class);
+    Route::post('leagues/{league}/members', [LeagueController::class, 'addMember']);
+    Route::delete('leagues/{league}/members', [LeagueController::class, 'removeMember']);
+    Route::post('leagues/{league}/leave', [LeagueController::class, 'leave']);
+    Route::get('leagues/{league}/rankings', [LeagueController::class, 'getRankings']);
 });
 
 // User Routes
 Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('players', UserController::class);
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
-    Route::get('mini-leagues', [UserController::class, 'getMiniLeagues']);
+    Route::get('user/leagues', [UserController::class, 'getLeagues']);
 
     // Statistics Routes
     Route::get('statistics/user', [StatisticsController::class, 'getUserStatistics']);
