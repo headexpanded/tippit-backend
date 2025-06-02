@@ -101,7 +101,7 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    // 'middleware' => ['web'],
 
     'auth_middleware' => 'auth',
 

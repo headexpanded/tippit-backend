@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('players', UserController::class);
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
-    Route::get('leagues', [UserController::class, 'getLeagues']);
+    Route::get('user/leagues', [UserController::class, 'getLeagues']);
 
     // Statistics Routes
     Route::get('statistics/user', [StatisticsController::class, 'getUserStatistics']);
