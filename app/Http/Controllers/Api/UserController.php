@@ -24,17 +24,17 @@ class UserController extends Controller
     }
 
     /**
-     * @return JsonResponse
+     * @return UserResource
      */
-    public function profile(): JsonResponse
+    public function profile(): UserResource
     {
         /** @var User $user */
         $user = Auth::user();
         if ($user instanceof User) {
-            $user->load(['statistics', 'predictions', 'miniLeagues']);
-            return response()->json($user);
+            $user->load(['statistics', 'predictions', 'leagues']);
+            return new UserResource($user);
         }
-        return response()->json(['error' => 'User not found'], 404);
+        return new UserResource(new User());
     }
 
     /**

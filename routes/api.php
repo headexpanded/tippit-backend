@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Mini League Routes
+// League Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('leagues', LeagueController::class);
     Route::post('leagues/{league}/members', [LeagueController::class, 'addMember']);
@@ -14,6 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('leagues/{league}/leave', [LeagueController::class, 'leave']);
     Route::get('leagues/{league}/rankings', [LeagueController::class, 'getRankings']);
 });
+
 
 // User Routes
 Route::middleware('auth:sanctum')->group(function () {

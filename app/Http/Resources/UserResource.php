@@ -13,11 +13,18 @@ class UserResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    #[ArrayShape(['id' => "mixed", 'name' => "string"])] public function toArray(Request $request): array
+    #[ArrayShape([
+        'id' => "mixed",
+        'username' => "string",
+        'email' => "string",
+        'leagues' => "mixed",
+    ])] public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'name' => $this->username,
+            'username' => $this->username,
+            'email' => $this->email,
+            'leagues' => BasicLeagueResource::collection($this->whenLoaded('leagues')),
         ];
     }
 }

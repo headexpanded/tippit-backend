@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\League\StoreLeagueRequest;
 use App\Http\Requests\League\UpdateLeagueRequest;
-use App\Http\Resources\LeagueResource;
+use App\Http\Resources\BasicLeagueResource;
 use App\Models\League;
 use App\Services\LeagueService;
 use Illuminate\Http\JsonResponse;
@@ -28,7 +28,7 @@ class LeagueController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        return LeagueResource::collection(League::all());
+        return BasicLeagueResource::collection(League::all());
     }
 
     /**
@@ -50,9 +50,9 @@ class LeagueController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(League $league): LeagueResource
+    public function show(League $league): BasicLeagueResource
     {
-        return new LeagueResource($league);
+        return new BasicLeagueResource($league);
     }
 
     /**
