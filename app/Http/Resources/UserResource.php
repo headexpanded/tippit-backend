@@ -22,6 +22,7 @@ class UserResource extends JsonResource
         'latestPoints' => "int",
         'roundsPlayed' => "int",
         'averagePoints' => "float",
+        'currentRank' => "int",
         'leagues' => "mixed",
     ])] public function toArray(Request $request): array
     {
@@ -34,6 +35,7 @@ class UserResource extends JsonResource
             'latestPoints' => $this->statistics->latest_points ?? 0,
             'roundsPlayed' => $this->statistics->rounds_played ?? 0,
             'averagePoints' => $this->statistics->average_points ?? 0.0,
+            'currentRank' => $this->statistics->current_rank ?? 0,
             'leagues' => BasicLeagueResource::collection($this->whenLoaded('leagues')),
         ];
     }
