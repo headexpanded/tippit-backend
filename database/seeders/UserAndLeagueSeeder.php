@@ -27,7 +27,7 @@ class UserAndLeagueSeeder extends Seeder
         }
         DB::table('users')->insert($users);
 
-        // Create 3 mini leagues
+        // Create 3 leagues
         $leagues = [
             [
                 'name' => 'The Champions League',
@@ -53,7 +53,7 @@ class UserAndLeagueSeeder extends Seeder
         ];
         DB::table('leagues')->insert($leagues);
 
-        // Add 8 users to each mini league
+        // Add 8 users to each league
         $leagueUsers = [];
         for ($leagueId = 1; $leagueId <= 3; $leagueId++) {
             $startUser = ($leagueId - 1) * 8 + 1;
@@ -73,19 +73,21 @@ class UserAndLeagueSeeder extends Seeder
         for ($i = 1; $i <= 35; $i++) {
             $userStats[] = [
                 'user_id' => $i,
-                'total_points' => 0,
+                'total_points' => $i + 2,
+                'rounds_played' => $i % 10 + 1,
+                'latest_points' => $i % 5,
                 'total_predictions' => 0,
-                'correct_predictions' => 0,
-                'exact_score_predictions' => 0,
-                'current_rank' => null,
-                'best_rank' => null,
+                'correct_predictions' => $i % 5,
+                'exact_score_predictions' => $i % 3,
+                'current_rank' => $i,
+                'best_rank' => $i,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
         DB::table('user_statistics')->insert($userStats);
 
-        // Create league rankings for all mini leagues
+        // Create league rankings for all leagues
         $leagueRankings = [];
         for ($i = 1; $i <= 3; $i++) {
             $leagueRankings[] = [

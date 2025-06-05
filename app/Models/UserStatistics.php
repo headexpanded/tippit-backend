@@ -10,6 +10,8 @@ class UserStatistics extends Model
     protected $fillable = [
         'user_id',
         'total_points',
+        'latest_points',
+        'rounds_played',
         'total_predictions',
         'correct_predictions',
         'exact_score_predictions',
@@ -19,6 +21,8 @@ class UserStatistics extends Model
 
     protected $casts = [
         'total_points' => 'integer',
+        'latest_points' => 'integer',
+        'rounds_played' => 'integer',
         'total_predictions' => 'integer',
         'correct_predictions' => 'integer',
         'exact_score_predictions' => 'integer',

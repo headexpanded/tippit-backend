@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('total_points')->default(0);
+            $table->integer('rounds_played')->default(0);
+            $table->integer('latest_points')->default(0);
             $table->integer('total_predictions')->default(0);
             $table->integer('correct_predictions')->default(0);
             $table->integer('exact_score_predictions')->default(0);

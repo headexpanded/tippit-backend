@@ -87,8 +87,8 @@ class UserService extends BaseService
         return $user->load([
             'statistics',
             'predictions.game',
-            'miniLeagues',
-            'ownedMiniLeagues',
+            'leagues',
+            'ownedleagues',
         ]);
     }
 
