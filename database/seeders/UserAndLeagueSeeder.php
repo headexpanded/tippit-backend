@@ -21,6 +21,7 @@ class UserAndLeagueSeeder extends Seeder
                 'username' => "User $i",
                 'email' => "user$i@example.com",
                 'password' => Hash::make('password'),
+                'supported_team_id' => rand(1, 12),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

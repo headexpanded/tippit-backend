@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -36,6 +37,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'supported_team_id',
         'google_id',
         'passkey_credentials',
         'email_reminders_enabled',
@@ -62,6 +64,7 @@ class User extends Authenticatable
     #[ArrayShape([
         'email_verified_at' => "string",
         'password' => "string",
+        'supported_team_id' => "string",
         'last_login_at' => "string",
         'email_reminders_enabled' => "string",
         'is_admin' => "string",
@@ -71,6 +74,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'supported_team_id' => 'integer',
             'last_login_at' => 'datetime',
             'email_reminders_enabled' => 'boolean',
             'is_admin' => 'boolean',
@@ -84,6 +88,14 @@ class User extends Authenticatable
     public function statistics(): HasOne
     {
         return $this->hasOne(UserStatistics::class);
+    }
+
+    /**
+     * Get the team that the user supports.
+     */
+    public function supportedTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'supported_team_id');
     }
 
     /**

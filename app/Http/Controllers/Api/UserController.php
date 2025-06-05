@@ -31,7 +31,7 @@ class UserController extends Controller
         /** @var User $user */
         $user = Auth::user();
         if ($user instanceof User) {
-            $user->load(['statistics', 'predictions', 'leagues']);
+            $user->load(['statistics', 'predictions', 'leagues', 'supportedTeam']);
             return new UserResource($user);
         }
         return new UserResource(new User());
