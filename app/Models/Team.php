@@ -28,4 +28,13 @@ class Team extends Model
     {
         return $this->hasMany(Game::class, 'away_team_id');
     }
+
+    /**
+     * @return HasMany
+     */
+    public function supporters()
+    {
+        return $this->hasMany(User::class, 'supported_team_id');
+    }
+
 }
