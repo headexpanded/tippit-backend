@@ -14,7 +14,8 @@ return new class extends Migration {
             $table->unsignedBigInteger
             (
                 'supported_team_id'
-            )->after('password');
+            )->nullable()
+             ->after('password');
 
             $table->foreign('supported_team_id')
                   ->references('id')

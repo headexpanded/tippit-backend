@@ -32,14 +32,14 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-            'supported_team_id' => ['required', 'exists:teams,id'],
+            'supported_team_id' => ['nullable', 'exists:teams,id'],
         ])->validate();
 
         return User::create([
             'username' => $input['username'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
-            'supported_team_id' => $input['supported_team_id'],
+            'supported_team_id' => $input['supported_team_id'] ?? null,
         ]);
     }
 }

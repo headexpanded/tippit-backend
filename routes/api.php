@@ -6,19 +6,23 @@ use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
+// Public Routes
+
+Route::apiResource('players', UserController::class);
+Route::apiResource('leagues', LeagueController::class);
+
 // League Routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('leagues', LeagueController::class);
+
     Route::post('leagues/{league}/members', [LeagueController::class, 'addMember']);
     Route::delete('leagues/{league}/members', [LeagueController::class, 'removeMember']);
     Route::post('leagues/{league}/leave', [LeagueController::class, 'leave']);
     Route::get('leagues/{league}/rankings', [LeagueController::class, 'getRankings']);
 });
 
-
 // User Routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('players', UserController::class);
+
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
     Route::get('user/leagues', [UserController::class, 'getLeagues']);
