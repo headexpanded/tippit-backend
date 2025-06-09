@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Round;
+use App\Models\RoundUserStatistics;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -18,8 +20,8 @@ class UserAndLeagueSeeder extends Seeder
         $users = [];
         for ($i = 1; $i <= 35; $i++) {
             $users[] = [
-                'username' => "User $i",
-                'email' => "user$i@example.com",
+                'username' => fake('en_GB')->firstName,
+                'email' => fake()->unique()->safeEmail(),
                 'password' => Hash::make('password'),
                 'supported_team_id' => rand(1, 12),
                 'created_at' => now(),
@@ -87,6 +89,33 @@ class UserAndLeagueSeeder extends Seeder
             ];
         }
         DB::table('user_statistics')->insert($userStats);
+
+        $completedRounds = Round::where('is_completed', true)->get();
+        $users = User::all();
+
+        foreach ($completedRounds as $round) {
+            $gamesInRound = $round->games;
+
+            foreach ($users as $user) {
+                // For each user and completed round, create statistics
+                $predictionsCount = rand(0, $gamesInRound->count());
+                $correctPredictions = rand(0, $predictionsCount);
+                $exactScorePredictions = rand(0, $correctPredictions);
+                $pointsEarned = ($correctPredictions * 3) + ($exactScorePredictions * 2);
+
+                RoundUserStatistics::create([
+                    'user_id' => $user->id,
+                    'round_id' => $round->id,
+                    'points_earned' => $pointsEarned,
+                    'predictions_made' => $predictionsCount,
+                    'correct_predictions' => $correctPredictions,
+                    'exact_score_predictions' => $exactScorePredictions,
+                ]);
+            }
+        }
+
+
+
 
         // Create league rankings for all leagues
         $leagueRankings = [];

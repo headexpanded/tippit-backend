@@ -51,4 +51,13 @@ class Game extends Model
     {
         return $this->hasMany(Prediction::class);
     }
+
+    /**
+     * @return BelongsTo
+     */
+    public function round(): BelongsTo
+    {
+        return $this->belongsTo(Round::class);
+    }
+
 }

@@ -91,6 +91,15 @@ class User extends Authenticatable
     }
 
     /**
+     * @return HasMany
+     */
+    public function roundStatistics(): HasMany
+    {
+        return $this->hasMany(RoundUserStatistics::class);
+    }
+
+
+    /**
      * Get the team that the user supports.
      */
     public function supportedTeam(): BelongsTo

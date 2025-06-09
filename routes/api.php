@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeagueController;
+use App\Http\Controllers\Api\RoundController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +14,6 @@ Route::apiResource('leagues', LeagueController::class);
 
 // League Routes
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::post('leagues/{league}/members', [LeagueController::class, 'addMember']);
     Route::delete('leagues/{league}/members', [LeagueController::class, 'removeMember']);
     Route::post('leagues/{league}/leave', [LeagueController::class, 'leave']);
@@ -22,7 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // User Routes
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::get('profile', [UserController::class, 'profile']);
     Route::get('predictions', [UserController::class, 'getPredictions']);
     Route::get('user/leagues', [UserController::class, 'getLeagues']);
@@ -33,6 +32,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('statistics/site', [StatisticsController::class, 'getSiteStatistics']);
     Route::get('statistics/season/{season}', [StatisticsController::class, 'getSeasonStatistics']);
     Route::get('statistics/accuracy', [StatisticsController::class, 'getPredictionAccuracy']);
+});
+
+// Round Routes
+Route::get('rounds', [RoundController::class, 'index']);
+Route::get('rounds/{round}', [RoundController::class, 'show']);
+Route::get('rounds/{round}/matches', [RoundController::class, 'matches']);
+Route::get('rounds/{round}/statistics', [RoundController::class, 'statistics']);
+
+// Protected Round Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('rounds/{round}/user-statistics/{user}', [RoundController::class, 'userStatistics']);
+    Route::get('rounds/{round}/predictions/{user}', [RoundController::class, 'userPredictions']);
 });
 
 // OAuth Routes
