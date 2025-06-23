@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Round;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,10 @@ class RoundController extends Controller
      */
     public function index(): JsonResponse
     {
-        $rounds = Round::orderBy('start_date')->get();
+        $rounds = Round::where("end_date", "<", Carbon::today())
+                       ->orderBy("id", "desc")
+                       ->get();
+
         return response()->json($rounds);
     }
 
@@ -91,6 +95,7 @@ class RoundController extends Controller
                                       'predictions_made' => $stats->predictions_made,
                                       'correct_predictions' => $stats->correct_predictions,
                                       'exact_score_predictions' => $stats->exact_score_predictions,
+                                      'total_points' => $stats->total_points,
                                   ];
                               });
 

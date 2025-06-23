@@ -79,6 +79,16 @@ class UserController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
+        $roundId = request()->query('roundId');
+        if ($roundId) {
+            $userStats = app(\App\Services\UserStatisticsService::class)->getUsersStatsAsAtRound((int)$roundId);
+            // Return a collection of UserResource, passing stats as at round
+            return UserResource::collection(collect($userStats)->map(function ($entry) {
+                // Pass the stats as a second argument to UserResource
+                return new UserResource($entry['user'], $entry['stats']);
+            }));
+        }
+        // Default: return all users with current stats
         return UserResource::collection(User::all());
     }
 

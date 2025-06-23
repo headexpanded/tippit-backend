@@ -83,4 +83,63 @@ class UserStatisticsService
             ]);
         }
     }
+
+    /**
+     * Get all users' stats as at a given round, including ranking.
+     *
+     * @param int $roundId
+     * @return array
+     */
+    public function getUsersStatsAsAtRound(int $roundId): array
+    {
+        $users = \App\Models\User::with(['supportedTeam', 'leagues'])->get();
+        $userStats = [];
+
+        // Get all round stats up to and including the round
+        foreach ($users as $user) {
+            $roundStats = $user->roundStatistics()
+                ->where('round_id', '<=', $roundId)
+                ->orderBy('round_id')
+                ->get();
+
+            $totalPoints = $roundStats->sum('points_earned');
+            $roundsPlayed = $roundStats->count();
+            $latestPoints = $roundStats->last()?->points_earned ?? 0;
+            $totalPredictions = $roundStats->sum('predictions_made');
+            $correctPredictions = $roundStats->sum('correct_predictions');
+            $exactScorePredictions = $roundStats->sum('exact_score_predictions');
+            $averagePoints = $roundsPlayed > 0 ? round($totalPoints / $roundsPlayed, 2) : 0.0;
+
+            $userStats[] = [
+                'user' => $user,
+                'stats' => [
+                    'totalPoints' => $totalPoints,
+                    'latestPoints' => $latestPoints,
+                    'roundsPlayed' => $roundsPlayed,
+                    'averagePoints' => $averagePoints,
+                    'currentRank' => 0, // to be filled after sorting
+                    'totalPredictions' => $totalPredictions,
+                    'correctPredictions' => $correctPredictions,
+                    'exactScorePredictions' => $exactScorePredictions,
+                ],
+            ];
+        }
+
+        // Sort by totalPoints descending and assign rank
+        usort($userStats, function ($a, $b) {
+            return $b['stats']['totalPoints'] <=> $a['stats']['totalPoints'];
+        });
+        $rank = 1;
+        foreach ($userStats as $i => &$entry) {
+            if ($i > 0 && $entry['stats']['totalPoints'] === $userStats[$i-1]['stats']['totalPoints']) {
+                $entry['stats']['currentRank'] = $userStats[$i-1]['stats']['currentRank'];
+            } else {
+                $entry['stats']['currentRank'] = $rank;
+            }
+            $rank++;
+        }
+        unset($entry);
+
+        return $userStats;
+    }
 }
