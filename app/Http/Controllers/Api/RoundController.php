@@ -51,23 +51,52 @@ class RoundController extends Controller
             return response()->json(['message' => 'Round statistics are not available yet'], 403);
         }
 
+        $completedGames = $round->games()->where('is_completed', true)->get();
+
         $statistics = [
             'total_games' => $round->games()->count(),
-            'completed_games' => $round->games()->where('is_completed', true)->count(),
-            'total_goals' => $round->games()
-                ->where('is_completed', true)
-                ->sum(function ($game) {
+            'completed_games' => $completedGames->count(),
+            'total_goals' => $completedGames->sum(function ($game) {
+                return $game->home_score + $game->away_score;
+            }),
+            'average_goals_per_game' => $completedGames->count() > 0 ?
+                $completedGames->sum(function ($game) {
                     return $game->home_score + $game->away_score;
-                }),
-            'average_goals_per_game' => $round->games()
-                ->where('is_completed', true)
-                ->avg(function ($game) {
-                    return $game->home_score + $game->away_score;
-                }),
+                }) / $completedGames->count() : 0,
         ];
 
         return response()->json($statistics);
     }
+
+    /**
+     * @param  Round  $round
+     *
+     * @return JsonResponse
+     */
+    public function allUsersStatistics(Round $round): JsonResponse
+    {
+        if ($round->isFuture()) {
+            return response()->json(['message' => 'User statistics for this round are not available yet'], 403);
+        }
+
+        // With the modifications proposed earlier that created RoundUserStatistics
+        $allUserStats = $round->userStatistics()
+                              ->with('user:id,username')
+                              ->get()
+                              ->map(function ($stats) {
+                                  return [
+                                      'user_id' => $stats->user_id,
+                                      'username' => $stats->user->username,
+                                      'points_earned' => $stats->points_earned,
+                                      'predictions_made' => $stats->predictions_made,
+                                      'correct_predictions' => $stats->correct_predictions,
+                                      'exact_score_predictions' => $stats->exact_score_predictions,
+                                  ];
+                              });
+
+        return response()->json($allUserStats);
+    }
+
 
     /**
      * @param  Round  $round

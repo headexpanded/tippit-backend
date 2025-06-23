@@ -39,6 +39,7 @@ Route::get('rounds', [RoundController::class, 'index']);
 Route::get('rounds/{round}', [RoundController::class, 'show']);
 Route::get('rounds/{round}/matches', [RoundController::class, 'matches']);
 Route::get('rounds/{round}/statistics', [RoundController::class, 'statistics']);
+Route::get('rounds/{round}/users/statistics', [RoundController::class, 'allUsersStatistics']);
 
 // Protected Round Routes
 Route::middleware('auth:sanctum')->group(function () {
