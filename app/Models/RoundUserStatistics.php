@@ -17,6 +17,7 @@ class RoundUserStatistics extends Model
         'predictions_made',
         'correct_predictions',
         'exact_score_predictions',
+        'total_points',
     ];
 
     protected $casts = [
@@ -24,6 +25,7 @@ class RoundUserStatistics extends Model
         'predictions_made' => 'integer',
         'correct_predictions' => 'integer',
         'exact_score_predictions' => 'integer',
+        'total_points' => 'integer',
     ];
 
     /**
