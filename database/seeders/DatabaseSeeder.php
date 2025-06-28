@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             RoundSeeder::class,
             GameSeeder::class,
             UserAndLeagueSeeder::class,
+            PredictionSeeder::class,
         ]);
     }
 }

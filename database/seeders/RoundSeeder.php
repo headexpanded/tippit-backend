@@ -13,80 +13,24 @@ class RoundSeeder extends Seeder
      */
     public function run(): void
     {
-        $rounds = [
-            [
-                'name' => 'Round 1',
-                'start_date' => Carbon::create(2025, 2, 1),
-                'end_date' => Carbon::create(2025, 2, 7),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 2',
-                'start_date' => Carbon::create(2025, 2, 8),
-                'end_date' => Carbon::create(2025, 2, 14),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 3',
-                'start_date' => Carbon::create(2025, 3, 15),
-                'end_date' => Carbon::create(2025, 3, 21),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 4',
-                'start_date' => Carbon::create(2025, 4, 2),
-                'end_date' => Carbon::create(2025, 4, 8),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 5',
-                'start_date' => Carbon::create(2025, 4, 23),
-                'end_date' => Carbon::create(2025, 4, 29),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 6',
-                'start_date' => Carbon::create(2025, 5, 4),
-                'end_date' => Carbon::create(2025, 5, 11),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 7',
-                'start_date' => Carbon::create(2025, 5, 14),
-                'end_date' => Carbon::create(2025, 5, 20),
-                'is_completed' => true
-            ],
-            [
-                'name' => 'Round 8',
-                'start_date' => Carbon::create(2025, 6, 21),
-                'end_date' => Carbon::create(2025, 6, 27),
-                'is_completed' => false
-            ],
-            [
-                'name' => 'Round 9',
-                'start_date' => Carbon::create(2025, 7, 28),
-                'end_date' => Carbon::create(2025, 7, 3),
-                'is_completed' => false
-            ],
-            [
-                'name' => 'Round 10',
-                'start_date' => Carbon::create(2025, 8, 4),
-                'end_date' => Carbon::create(2025, 8, 10),
-                'is_completed' => false
-            ],
-            [
-                'name' => 'Round 11',
-                'start_date' => Carbon::create(2025, 9, 11),
-                'end_date' => Carbon::create(2025, 9, 17),
-                'is_completed' => false
-            ],
-            [
-                'name' => 'Round 12',
-                'start_date' => Carbon::create(2025, 9, 18),
-                'end_date' => Carbon::create(2025, 9, 24),
-                'is_completed' => false
-            ],
-        ];
+        $rounds = [];
+
+        // Create 22 rounds (enough for each team to play each other twice)
+        // First 11 rounds are completed (past), next 11 are future
+        for ($i = 1; $i <= 22; $i++) {
+            $isCompleted = $i <= 11;
+
+            // Start dates: First round starts Feb 6, 2025 (Thursday)
+            $startDate = Carbon::create(2025, 2, 6)->addWeeks($i - 1);
+            $endDate = $startDate->copy()->addDays(3); // Thursday to Sunday
+
+            $rounds[] = [
+                'name' => "Round {$i}",
+                'start_date' => $startDate->setTime(18, 0), // Thursday 18:00
+                'end_date' => $endDate->setTime(19, 0), // Sunday 19:00
+                'is_completed' => $isCompleted
+            ];
+        }
 
         foreach ($rounds as $round) {
             Round::create($round);

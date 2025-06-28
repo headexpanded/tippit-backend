@@ -17,8 +17,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamp('joined_at')->useCurrent();
             $table->timestamps();
-
-            $table->unique(['league_id', 'user_id']);
         });
     }
 

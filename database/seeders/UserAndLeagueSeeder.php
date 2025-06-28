@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Round;
-use App\Models\RoundUserStatistics;
-use App\Models\User;
+use App\Models\League;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -16,14 +14,22 @@ class UserAndLeagueSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create 35 users
+        // Create 500 users
         $users = [];
-        for ($i = 1; $i <= 35; $i++) {
+        $teamIds = range(1, 12);
+
+        for ($i = 1; $i <= 500; $i++) {
+            // 10-15% of users don't support any team
+            $supportedTeamId = null;
+            if (rand(1, 100) <= 85) {
+                $supportedTeamId = $teamIds[array_rand($teamIds)];
+            }
+
             $users[] = [
-                'username' => fake('en_GB')->firstName,
+                'username' => fake('en_GB')->firstName . rand(1, 999),
                 'email' => fake()->unique()->safeEmail(),
                 'password' => Hash::make('password'),
-                'supported_team_id' => rand(1, 12),
+                'supported_team_id' => $supportedTeamId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -56,79 +62,83 @@ class UserAndLeagueSeeder extends Seeder
         ];
         DB::table('leagues')->insert($leagues);
 
-        // Add 8 users to each league
+        // Allocate users to leagues
+        $this->allocateUsersToLeagues();
+    }
+
+    /**
+     * Allocate users to leagues with some users in multiple leagues
+     */
+    private function allocateUsersToLeagues(): void
+    {
         $leagueUsers = [];
-        for ($leagueId = 1; $leagueId <= 3; $leagueId++) {
-            $startUser = ($leagueId - 1) * 8 + 1;
-            for ($i = 0; $i < 8; $i++) {
-                $leagueUsers[] = [
-                    'league_id' => $leagueId,
-                    'user_id' => $startUser + $i,
-                    'joined_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-        DB::table('league_user')->insert($leagueUsers);
-        // Create user statistics for all users
-        $userStats = [];
-        for ($i = 1; $i <= 35; $i++) {
-            $userStats[] = [
+
+        // League 1: 10 users (users 1-10)
+        for ($i = 1; $i <= 10; $i++) {
+            $leagueUsers[] = [
+                'league_id' => 1,
                 'user_id' => $i,
-                'total_points' => $i + 2,
-                'rounds_played' => $i % 10 + 1,
-                'latest_points' => $i % 5,
-                'total_predictions' => 0,
-                'correct_predictions' => $i % 5,
-                'exact_score_predictions' => $i % 3,
-                'current_rank' => $i,
-                'best_rank' => $i,
+                'joined_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
-        DB::table('user_statistics')->insert($userStats);
 
-        $completedRounds = Round::where('is_completed', true)->get();
-        $users = User::all();
-
-        foreach ($completedRounds as $round) {
-            $gamesInRound = $round->games;
-
-            foreach ($users as $user) {
-                // For each user and completed round, create statistics
-                $predictionsCount = rand(0, $gamesInRound->count());
-                $correctPredictions = rand(0, $predictionsCount);
-                $exactScorePredictions = rand(0, $correctPredictions);
-                $pointsEarned = ($correctPredictions * 3) + ($exactScorePredictions * 2);
-
-                RoundUserStatistics::create([
-                    'user_id' => $user->id,
-                    'round_id' => $round->id,
-                    'points_earned' => $pointsEarned,
-                    'predictions_made' => $predictionsCount,
-                    'correct_predictions' => $correctPredictions,
-                    'exact_score_predictions' => $exactScorePredictions,
-                ]);
-            }
-        }
-
-
-
-
-        // Create league rankings for all leagues
-        $leagueRankings = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $leagueRankings[] = [
-                'league_id' => $i,
-                'total_points' => 0,
-                'average_points' => 0,
-                'member_count' => 8,
+        // League 2: 10 users (users 11-20)
+        for ($i = 11; $i <= 20; $i++) {
+            $leagueUsers[] = [
+                'league_id' => 2,
+                'user_id' => $i,
+                'joined_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }
-        DB::table('league_rankings')->insert($leagueRankings);
+
+        // League 3: 8 users (users 21-28)
+        for ($i = 21; $i <= 28; $i++) {
+            $leagueUsers[] = [
+                'league_id' => 3,
+                'user_id' => $i,
+                'joined_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        // Add some users to multiple leagues
+        // User 42 joins League 1 and League 3
+        $leagueUsers[] = [
+            'league_id' => 1,
+            'user_id' => 42,
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        $leagueUsers[] = [
+            'league_id' => 3,
+            'user_id' => 42,
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        // User 26 joins League 2 and League 3
+        $leagueUsers[] = [
+            'league_id' => 2,
+            'user_id' => 26,
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        $leagueUsers[] = [
+            'league_id' => 3,
+            'user_id' => 26,
+            'joined_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        DB::table('league_user')->insert($leagueUsers);
     }
 }
