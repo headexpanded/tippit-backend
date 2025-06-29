@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\RoundService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 
 class RoundController extends Controller
@@ -54,18 +55,15 @@ class RoundController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function index(): JsonResponse
+    public function index(): AnonymousResourceCollection
     {
         $rounds = Round::where('is_completed', true)
             ->orderBy('start_date', 'desc')
             ->get();
 
-        return response()->json([
-            'message' => 'Completed rounds retrieved successfully',
-            'data' => RoundResource::collection($rounds)
-        ]);
+        return RoundResource::collection($rounds);
     }
 
     /**

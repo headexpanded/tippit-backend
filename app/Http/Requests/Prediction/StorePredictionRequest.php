@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Prediction;
 
+use App\Models\Game;
 use Illuminate\Foundation\Http\FormRequest;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -19,14 +20,44 @@ class StorePredictionRequest extends FormRequest
      * @return array[]
      */
     #[ArrayShape([
+        'game_id' => "string[]",
         'predicted_home_score' => "string[]",
         'predicted_away_score' => "string[]",
     ])] public function rules(): array
     {
         return [
+            'game_id' => ['required', 'integer', 'exists:games,id'],
             'predicted_home_score' => ['required', 'integer', 'min:0', 'max:20'],
             'predicted_away_score' => ['required', 'integer', 'min:0', 'max:20'],
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $gameId = $this->input('game_id');
+            if ($gameId) {
+                $game = Game::with('round')->find($gameId);
+
+                if ($game) {
+                    // Check if round is completed
+                    if ($game->round && $game->round->is_completed) {
+                        $validator->errors()->add('game_id', 'Cannot make predictions for completed rounds.');
+                    }
+
+                    // Check if game is locked
+                    if ($game->isLocked()) {
+                        $validator->errors()->add('game_id', 'Game is locked. Cannot make predictions after lockout time.');
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -35,6 +66,9 @@ class StorePredictionRequest extends FormRequest
      * @return array
      */
     #[ArrayShape([
+        'game_id.required' => "string",
+        'game_id.integer' => "string",
+        'game_id.exists' => "string",
         'predicted_home_score.required' => "string",
         'predicted_home_score.integer' => "string",
         'predicted_home_score.min' => "string",
@@ -46,6 +80,9 @@ class StorePredictionRequest extends FormRequest
     ])] public function messages(): array
     {
         return [
+            'game_id.required' => 'Game ID is required.',
+            'game_id.integer' => 'Game ID must be a valid number.',
+            'game_id.exists' => 'The selected game does not exist.',
             'predicted_home_score.required' => 'Please predict the home team score.',
             'predicted_home_score.integer' => 'Home team score must be a whole number.',
             'predicted_home_score.min' => 'Home team score cannot be negative.',

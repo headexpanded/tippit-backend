@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\LeagueController;
 use App\Http\Controllers\Api\RoundController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PredictionController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
@@ -28,6 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Account management
     Route::delete('account', [UserController::class, 'deleteAccount']);
+
+    // Prediction Routes
+    Route::apiResource('predictions', PredictionController::class);
+    Route::get('games/{game}/predictions', [PredictionController::class, 'getGamePredictions']);
+    Route::get('games/{game}/user-prediction', [PredictionController::class, 'getUserPredictionForGame']);
 
     // Statistics Routes
     Route::get('statistics/user', [StatisticsController::class, 'getUserStatistics']);

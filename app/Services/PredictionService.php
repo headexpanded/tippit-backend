@@ -7,13 +7,12 @@ use App\Events\Prediction\PredictionUpdated;
 use App\Models\Game;
 use App\Models\Prediction;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class PredictionService extends BaseService
 {
     /**
-     * @param  Model  $model
+     * @param  Prediction  $model
      */
     public function __construct(Prediction $model)
     {
@@ -139,5 +138,40 @@ class PredictionService extends BaseService
         }
 
         return $prediction->delete();
+    }
+
+    /**
+     * Create or update a prediction for a user and game
+     *
+     * @param User $user
+     * @param int $gameId
+     * @param array $data
+     * @return Prediction
+     * @throws \Exception
+     */
+    public function createOrUpdatePrediction(User $user, int $gameId, array $data): Prediction
+    {
+        $game = Game::findOrFail($gameId);
+
+        // Check if the game is locked
+        if ($game->isLocked()) {
+            throw new \Exception('Game is locked. Cannot make predictions after lockout time.');
+        }
+
+        // Check if round is completed
+        if ($game->round && $game->round->is_completed) {
+            throw new \Exception('Cannot make predictions for completed rounds.');
+        }
+
+        // Check if prediction already exists
+        $existingPrediction = $this->getUserPredictionForGame($user, $game);
+
+        if ($existingPrediction) {
+            // Update existing prediction
+            return $this->updatePrediction($existingPrediction, $data);
+        } else {
+            // Create new prediction
+            return $this->createPrediction($user, $game, $data);
+        }
     }
 }

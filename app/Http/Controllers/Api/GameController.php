@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Services\GameService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class GameController extends Controller
 {
@@ -23,10 +25,10 @@ class GameController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(): AnonymousResourceCollection
     {
         $games = $this->gameService->getUpcomingGames();
-        return response()->json($games);
+        return GameResource::collection($games);
     }
 
     /**
@@ -44,15 +46,16 @@ class GameController extends Controller
         ]);
 
         $game = $this->gameService->createGame($validated);
-        return response()->json($game, 201);
+        return response()->json(new GameResource($game), 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Game $game): JsonResponse
+    public function show(Game $game): GameResource
     {
-        return response()->json($game->load(['homeTeam', 'awayTeam']));
+        $game->load(['homeTeam', 'awayTeam']);
+        return new GameResource($game);
     }
 
     /**
@@ -70,7 +73,7 @@ class GameController extends Controller
         ]);
 
         $game = $this->gameService->updateGame($game, $validated);
-        return response()->json($game);
+        return response()->json(new GameResource($game));
     }
 
     /**
@@ -101,15 +104,15 @@ class GameController extends Controller
             $validated['away_score']
         );
 
-        return response()->json($game);
+        return response()->json(new GameResource($game));
     }
 
     /**
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function completed(): JsonResponse
+    public function completed(): AnonymousResourceCollection
     {
         $games = $this->gameService->getCompletedGames();
-        return response()->json($games);
+        return GameResource::collection($games);
     }
 }

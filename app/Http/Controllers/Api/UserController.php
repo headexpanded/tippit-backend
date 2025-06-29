@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\DeleteAccountRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Resources\BasicLeagueResource;
+use App\Http\Resources\PredictionResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
@@ -41,14 +43,14 @@ class UserController extends Controller
     }
 
     /**
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function getPredictions(): JsonResponse
+    public function getPredictions(): AnonymousResourceCollection
     {
         /** @var User $user */
         $user = Auth::user();
         if (!$user instanceof User) {
-            return response()->json(['error' => 'User not found'], 404);
+            return PredictionResource::collection(collect());
         }
 
         $predictions = $user->predictions()
@@ -56,25 +58,25 @@ class UserController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json($predictions);
+        return PredictionResource::collection($predictions);
     }
 
     /**
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function getLeagues(): JsonResponse
+    public function getLeagues(): AnonymousResourceCollection
     {
         /** @var User $user */
         $user = Auth::user();
         if (!$user instanceof User) {
-            return response()->json(['error' => 'User not found'], 404);
+            return BasicLeagueResource::collection(collect());
         }
 
         $leagues = $user->leagues()
             ->with(['creator', 'users'])
             ->get();
 
-        return response()->json($leagues);
+        return BasicLeagueResource::collection($leagues);
     }
 
     /**
@@ -98,12 +100,12 @@ class UserController extends Controller
     /**
      * @param  User  $user
      *
-     * @return JsonResponse
+     * @return UserResource
      */
-    public function show(User $user): JsonResponse
+    public function show(User $user): UserResource
     {
         $user = $this->userService->getUserWithRelations($user);
-        return response()->json($user);
+        return new UserResource($user);
     }
 
     /**
@@ -124,16 +126,16 @@ class UserController extends Controller
      *
      * @param  UpdateUserRequest  $request
      * @param  User  $user
-     * @return JsonResponse
+     * @return UserResource
      */
-    public function update(UpdateUserRequest $request, User $user): JsonResponse
+    public function update(UpdateUserRequest $request, User $user): UserResource
     {
         $validated = $request->validated();
 
         $user->update($validated);
         $user->load(['statistics', 'predictions', 'leagues', 'supportedTeam']);
 
-        return response()->json(new UserResource($user));
+        return new UserResource($user);
     }
 
     /**
@@ -202,24 +204,24 @@ class UserController extends Controller
     /**
      * @param  Request  $request
      *
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function search(Request $request): JsonResponse
+    public function search(Request $request): AnonymousResourceCollection
     {
         $validated = $request->validate([
             'query' => 'required|string|min:2',
         ]);
 
         $users = $this->userService->searchUsers($validated['query']);
-        return response()->json($users);
+        return UserResource::collection($users);
     }
 
     /**
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function getTopUsers(): JsonResponse
+    public function getTopUsers(): AnonymousResourceCollection
     {
         $users = $this->userService->getTopUsers();
-        return response()->json($users);
+        return UserResource::collection($users);
     }
 }

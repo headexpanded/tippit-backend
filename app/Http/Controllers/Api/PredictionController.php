@@ -3,21 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Prediction\StorePredictionRequest;
+use App\Http\Resources\PredictionResource;
 use App\Models\Game;
 use App\Models\Prediction;
 use App\Models\User;
 use App\Services\PredictionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class PredictionController extends Controller
 {
     protected PredictionService $predictionService;
 
     /**
-     * @param  PredictionService  $predictionService
+     * @param PredictionService $predictionService
      */
     public function __construct(PredictionService $predictionService)
     {
@@ -27,31 +28,53 @@ class PredictionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(): AnonymousResourceCollection
     {
-        $predictions = $this->predictionService->getUserPredictions(auth()->user());
-        return response()->json($predictions);
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            return PredictionResource::collection(collect());
+        }
+
+        $predictions = $this->predictionService->getUserPredictions($user);
+        return PredictionResource::collection($predictions);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Game $game): JsonResponse
+    public function store(StorePredictionRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'predicted_home_score' => 'required|integer|min:0',
-            'predicted_away_score' => 'required|integer|min:0',
-        ]);
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
 
         try {
-            $prediction = $this->predictionService->createPrediction(
-                auth()->user(),
-                $game,
-                $validated
+            $validated = $request->validated();
+
+            $prediction = $this->predictionService->createOrUpdatePrediction(
+                $user,
+                $validated['game_id'],
+                [
+                    'predicted_home_score' => $validated['predicted_home_score'],
+                    'predicted_away_score' => $validated['predicted_away_score'],
+                ]
             );
-            return response()->json($prediction, 201);
+
+            $prediction->load(['game.homeTeam', 'game.awayTeam']);
+
+            return response()->json([
+                'message' => 'Prediction saved successfully',
+                'data' => new PredictionResource($prediction)
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 
@@ -60,24 +83,49 @@ class PredictionController extends Controller
      */
     public function show(Prediction $prediction): JsonResponse
     {
-        return response()->json($prediction->load(['game.homeTeam', 'game.awayTeam']));
+        $prediction->load(['game.homeTeam', 'game.awayTeam']);
+
+        return response()->json([
+            'message' => 'Prediction retrieved successfully',
+            'data' => new PredictionResource($prediction)
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Prediction $prediction): JsonResponse
+    public function update(StorePredictionRequest $request, Prediction $prediction): JsonResponse
     {
-        $validated = $request->validate([
-            'predicted_home_score' => 'required|integer|min:0',
-            'predicted_away_score' => 'required|integer|min:0',
-        ]);
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Check if user owns this prediction
+        if ($prediction->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
 
         try {
-            $prediction = $this->predictionService->updatePrediction($prediction, $validated);
-            return response()->json($prediction);
+            $validated = $request->validated();
+
+            $updatedPrediction = $this->predictionService->updatePrediction($prediction, [
+                'predicted_home_score' => $validated['predicted_home_score'],
+                'predicted_away_score' => $validated['predicted_away_score'],
+            ]);
+
+            $updatedPrediction->load(['game.homeTeam', 'game.awayTeam']);
+
+            return response()->json([
+                'message' => 'Prediction updated successfully',
+                'data' => new PredictionResource($updatedPrediction)
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 
@@ -86,37 +134,72 @@ class PredictionController extends Controller
      */
     public function destroy(Prediction $prediction): JsonResponse
     {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Check if user owns this prediction
+        if ($prediction->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         try {
             $this->predictionService->deletePrediction($prediction);
-            return response()->json(null, 204);
+            return response()->json([
+                'message' => 'Prediction deleted successfully'
+            ], 204);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
         }
     }
 
     /**
-     * @param  Game  $game
+     * Get all predictions for a specific game
      *
-     * @return JsonResponse
+     * @param Game $game
+     * @return AnonymousResourceCollection
      */
-    public function getGamePredictions(Game $game): JsonResponse
+    public function getGamePredictions(Game $game): AnonymousResourceCollection
     {
         $predictions = $this->predictionService->getPredictionsForGame($game);
-        return response()->json($predictions);
+
+        return PredictionResource::collection($predictions);
     }
 
     /**
-     * @param  Game  $game
+     * Get current user's prediction for a specific game
      *
+     * @param Game $game
      * @return JsonResponse
      */
     public function getUserPredictionForGame(Game $game): JsonResponse
     {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
+
         if (!$user instanceof User) {
             return response()->json(['error' => 'User not found'], 404);
         }
+
         $prediction = $this->predictionService->getUserPredictionForGame($user, $game);
-        return response()->json($prediction);
+
+        if (!$prediction) {
+            return response()->json([
+                'message' => 'No prediction found for this game',
+                'data' => null
+            ], 404);
+        }
+
+        $prediction->load(['game.homeTeam', 'game.awayTeam']);
+
+        return response()->json([
+            'message' => 'User prediction retrieved successfully',
+            'data' => new PredictionResource($prediction)
+        ]);
     }
 }
