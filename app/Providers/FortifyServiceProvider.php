@@ -39,7 +39,7 @@ class FortifyServiceProvider extends ServiceProvider
             return view('auth.login');
         });
         Fortify::authenticateUsing(function (LoginRequest $request) {
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('username', $request->username)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
                 return $user;
@@ -49,7 +49,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
+            $throttleKey = Str::transliterate(Str::lower($request->input('username')) . '|' . $request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

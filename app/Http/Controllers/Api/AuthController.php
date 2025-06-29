@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -114,134 +116,127 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function getPasskeyOptions(Request $request): JsonResponse
-    {
-        $user = Auth::user();
-
-        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
-            new PublicKeyCredentialRpEntity(
-                config('app.name'),
-                config('app.url'),
-                null
-            ),
-            new PublicKeyCredentialUserEntity(
-                $user->email,
-                $user->id,
-                $user->name
-            ),
-            null,
-            null
-        );
-
-        session(['passkey_options' => $publicKeyCredentialCreationOptions]);
-
-        return response()->json($publicKeyCredentialCreationOptions);
-    }
-
-    /**
-     * @param  Request  $request
-     *
-     * @return JsonResponse
-     */
-    public function registerPasskey(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'credential' => 'required|array',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            $publicKeyCredentialSource = PublicKeyCredentialSource::createFromArray($request->credential);
-
-            $user = Auth::user();
-            $user->passkey_credentials = array_merge(
-                $user->passkey_credentials ?? [],
-                [$publicKeyCredentialSource->jsonSerialize()]
-            );
-            $user->save();
-
-            return response()->json(['message' => 'Passkey registered successfully']);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Passkey registration failed'], 422);
-        }
-    }
-
-    /**
-     * @return JsonResponse
-     */
-    public function getPasskeyAuthenticationOptions(): JsonResponse
-    {
-        $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::create(
-            null,
-            null,
-            null,
-            null
-        );
-
-        session(['passkey_auth_options' => $publicKeyCredentialRequestOptions]);
-
-        return response()->json($publicKeyCredentialRequestOptions);
-    }
+    // public function getPasskeyOptions(Request $request): JsonResponse
+    // {
+    //     $user = Auth::user();
+    //
+    //     $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
+    //         new PublicKeyCredentialRpEntity(
+    //             config('app.name'),
+    //             config('app.url'),
+    //             null
+    //         ),
+    //         new PublicKeyCredentialUserEntity(
+    //             $user->email,
+    //             $user->id,
+    //             $user->name
+    //         ),
+    //         null,
+    //         null
+    //     );
+    //
+    //     session(['passkey_options' => $publicKeyCredentialCreationOptions]);
+    //
+    //     return response()->json($publicKeyCredentialCreationOptions);
+    // }
 
     /**
      * @param  Request  $request
      *
      * @return JsonResponse
      */
-    public function authenticateWithPasskey(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'credential' => 'required|array',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            $publicKeyCredentialSource = PublicKeyCredentialSource::createFromArray($request->credential);
-
-            $user = User::whereJsonContains('passkey_credentials', $publicKeyCredentialSource->jsonSerialize())
-                ->first();
-
-            if (!$user) {
-                return response()->json(['error' => 'Invalid passkey'], 401);
-            }
-
-            $token = $user->createToken('passkey_token')->plainTextToken;
-
-            return response()->json([
-                'user' => $user,
-                'token' => $token
-            ]);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Passkey authentication failed'], 401);
-        }
-    }
+    // public function registerPasskey(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'credential' => 'required|array',
+    //     ]);
+    //
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+    //
+    //     try {
+    //         $publicKeyCredentialSource = PublicKeyCredentialSource::createFromArray($request->credential);
+    //
+    //         $user = Auth::user();
+    //         $user->passkey_credentials = array_merge(
+    //             $user->passkey_credentials ?? [],
+    //             [$publicKeyCredentialSource->jsonSerialize()]
+    //         );
+    //         $user->save();
+    //
+    //         return response()->json(['message' => 'Passkey registered successfully']);
+    //     } catch (Exception $e) {
+    //         return response()->json(['error' => 'Passkey registration failed'], 422);
+    //     }
+    // }
 
     /**
-     * @param Request $request
      * @return JsonResponse
      */
-    public function register(Request $request): JsonResponse
+    // public function getPasskeyAuthenticationOptions(): JsonResponse
+    // {
+    //     $publicKeyCredentialRequestOptions = PublicKeyCredentialRequestOptions::create(
+    //         null,
+    //         null,
+    //         null,
+    //         null
+    //     );
+    //
+    //     session(['passkey_auth_options' => $publicKeyCredentialRequestOptions]);
+    //
+    //     return response()->json($publicKeyCredentialRequestOptions);
+    // }
+
+    /**
+     * @param  Request  $request
+     *
+     * @return JsonResponse
+     */
+    // public function authenticateWithPasskey(Request $request): JsonResponse
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'credential' => 'required|array',
+    //     ]);
+    //
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+    //
+    //     try {
+    //         $publicKeyCredentialSource = PublicKeyCredentialSource::createFromArray($request->credential);
+    //
+    //         $user = User::whereJsonContains('passkey_credentials', $publicKeyCredentialSource->jsonSerialize())
+    //             ->first();
+    //
+    //         if (!$user) {
+    //             return response()->json(['error' => 'Invalid passkey'], 401);
+    //         }
+    //
+    //         $token = $user->createToken('passkey_token')->plainTextToken;
+    //
+    //         return response()->json([
+    //             'user' => $user,
+    //             'token' => $token
+    //         ]);
+    //     } catch (Exception $e) {
+    //         return response()->json(['error' => 'Passkey authentication failed'], 401);
+    //     }
+    // }
+
+    /**
+     * Register a new user.
+     *
+     * @param RegisterRequest $request
+     * @return JsonResponse
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255|unique:users',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
         $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
+            'supported_team_id' => $request->supported_team_id,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -250,5 +245,29 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token
         ], 201);
+    }
+
+    /**
+     * Login a user.
+     *
+     * @param LoginRequest $request
+     * @return JsonResponse
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        $user = User::where('username', $request->username)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'error' => 'Invalid credentials'
+            ], 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
     }
 }
