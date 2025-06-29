@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 
-Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/login', [AuthController::class, 'login']);
 Route::apiResource('players', UserController::class);
 Route::apiResource('leagues', LeagueController::class);
 

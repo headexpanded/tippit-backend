@@ -38,15 +38,6 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(function () {
             return view('auth.login');
         });
-        Fortify::authenticateUsing(function (LoginRequest $request) {
-            $user = User::where('username', $request->username)->first();
-
-            if ($user && Hash::check($request->password, $user->password)) {
-                return $user;
-            }
-
-            return null;
-        });
 
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input('username')) . '|' . $request->ip());
