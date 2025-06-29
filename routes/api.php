@@ -26,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('predictions', [UserController::class, 'getPredictions']);
     Route::get('user/leagues', [UserController::class, 'getLeagues']);
 
+    // Account management
+    Route::delete('account', [UserController::class, 'deleteAccount']);
+
     // Statistics Routes
     Route::get('statistics/user', [StatisticsController::class, 'getUserStatistics']);
     Route::get('statistics/rankings', [StatisticsController::class, 'getGlobalRankings']);

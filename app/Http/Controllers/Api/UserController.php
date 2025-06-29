@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\DeleteAccountRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
@@ -10,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -104,14 +107,75 @@ class UserController extends Controller
     }
 
     /**
-     * @param  User  $user
+     * Store a newly created user (admin only).
      *
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+    public function store(Request $request): JsonResponse
+    {
+        // This method is for admin user creation, not public registration
+        // Registration should use Fortify's /api/register route
+        return response()->json(['error' => 'Use /api/register for user registration'], 405);
+    }
+
+    /**
+     * Update the specified user (users can only update their own account).
+     *
+     * @param  UpdateUserRequest  $request
+     * @param  User  $user
+     * @return JsonResponse
+     */
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $user->update($validated);
+        $user->load(['statistics', 'predictions', 'leagues', 'supportedTeam']);
+
+        return response()->json(new UserResource($user));
+    }
+
+    /**
+     * Remove the specified user (users can only delete their own account).
+     *
+     * @param  User  $user
      * @return JsonResponse
      */
     public function destroy(User $user): JsonResponse
     {
+        // Users can only delete their own account
+        if (Auth::id() !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $this->userService->deleteUser($user);
         return response()->json(null, 204);
+    }
+
+    /**
+     * Delete the authenticated user's account.
+     *
+     * @param  DeleteAccountRequest  $request
+     * @return JsonResponse
+     */
+    public function deleteAccount(DeleteAccountRequest $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $this->userService->deleteUser($user);
+
+        // Logout the user after account deletion
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['message' => 'Account deleted successfully'], 200);
     }
 
     /**
