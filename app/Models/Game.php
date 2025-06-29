@@ -60,4 +60,31 @@ class Game extends Model
         return $this->belongsTo(Round::class);
     }
 
+    /**
+     * Check if the game is locked for predictions
+     *
+     * @return bool
+     */
+    public function isLocked(): bool
+    {
+        // If the game has a specific lockout time, use that
+        if ($this->lockout_time) {
+            return now()->isAfter($this->lockout_time);
+        }
+
+        // Otherwise, use the round's lockout time (10 minutes before first game)
+        if ($this->round) {
+            $firstGame = $this->round->games()
+                ->orderBy('game_time')
+                ->first();
+
+            if ($firstGame && $firstGame->game_time) {
+                $lockoutTime = $firstGame->game_time->subMinutes(10);
+                return now()->isAfter($lockoutTime);
+            }
+        }
+
+        return true; // Default to locked if we can't determine
+    }
+
 }

@@ -3,30 +3,86 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoundResource;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\RoundService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RoundController extends Controller
 {
+    protected RoundService $roundService;
+
     /**
+     * @param RoundService $roundService
+     */
+    public function __construct(RoundService $roundService)
+    {
+        $this->roundService = $roundService;
+    }
+
+    /**
+     * Get the next round with games and user predictions
+     *
+     * @return JsonResponse
+     */
+    public function nextRound(): JsonResponse
+    {
+        $nextRound = $this->roundService->getNextRound();
+
+        if (!$nextRound) {
+            return response()->json([
+                'message' => 'No upcoming rounds found',
+                'data' => null
+            ], 404);
+        }
+
+        // Get authenticated user
+        $user = Auth::user();
+
+        // Load round with games and user predictions
+        $roundWithData = $this->roundService->getRoundWithGamesAndPredictions($nextRound, $user);
+
+        return response()->json([
+            'message' => 'Next round retrieved successfully',
+            'data' => new RoundResource($roundWithData)
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
      * @return JsonResponse
      */
     public function index(): JsonResponse
     {
-        $rounds = Round::orderBy('id', "desc")->where('is_completed', true)->get();
+        $rounds = Round::where('is_completed', true)
+            ->orderBy('start_date', 'desc')
+            ->get();
 
-        return response()->json($rounds);
+        return response()->json([
+            'message' => 'Completed rounds retrieved successfully',
+            'data' => RoundResource::collection($rounds)
+        ]);
     }
 
     /**
-     * @param  Round  $round
+     * Display the specified resource.
      *
+     * @param Round $round
      * @return JsonResponse
      */
     public function show(Round $round): JsonResponse
     {
-        return response()->json($round);
+        $user = Auth::user();
+        $roundWithData = $this->roundService->getRoundWithGamesAndPredictions($round, $user);
+
+        return response()->json([
+            'message' => 'Round retrieved successfully',
+            'data' => new RoundResource($roundWithData)
+        ]);
     }
 
     /**
@@ -113,20 +169,20 @@ class RoundController extends Controller
 
         $statistics = [
             'total_points' => $user->predictions()
-                ->whereHas('match', function ($query) use ($round) {
+                ->whereHas('game', function ($query) use ($round) {
                     $query->where('round_id', $round->id);
                 })
-                ->sum('points'),
+                ->sum('points_awarded'),
             'total_predictions' => $user->predictions()
-                ->whereHas('match', function ($query) use ($round) {
+                ->whereHas('game', function ($query) use ($round) {
                     $query->where('round_id', $round->id);
                 })
                 ->count(),
             'correct_predictions' => $user->predictions()
-                ->whereHas('match', function ($query) use ($round) {
+                ->whereHas('game', function ($query) use ($round) {
                     $query->where('round_id', $round->id);
                 })
-                ->where('points', '>', 0)
+                ->where('points_awarded', '>', 0)
                 ->count(),
         ];
 

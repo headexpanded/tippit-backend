@@ -44,6 +44,9 @@ Route::get('rounds/{round}/matches', [RoundController::class, 'matches']);
 Route::get('rounds/{round}/statistics', [RoundController::class, 'statistics']);
 Route::get('rounds/{round}/users/statistics', [RoundController::class, 'allUsersStatistics']);
 
+// Next Round Route (public - no auth required)
+Route::get('next-round', [RoundController::class, 'nextRound']);
+
 // Protected Round Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('rounds/{round}/user-statistics/{user}', [RoundController::class, 'userStatistics']);
